@@ -1,0 +1,68 @@
+---
+title: "Computing power with DeclareDesign"
+output: rmarkdown::html_vignette
+bibliography: bibliography.bib
+vignette: >
+  %\VignetteIndexEntry{Computing power with DeclareDesign}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = FALSE,
+  comment = "#>"
+)
+```
+
+`write_DeclareDesign()` generates copy-pasteable DeclareDesign code that reproduces a powerrules calculation through simulation.
+The generated code follows Declaration 18.1 in @Blair2023.
+
+## Running the pipeline
+
+Suppose we plan to replicate @Ahler2018, who find that correcting respondents' misperceptions of their out-party reduces affective polarization.
+The standard deviation of feeling thermometer responses in the 2020 ANES is 20.8.
+We plan to recruit 500 respondents per condition and assume a treatment effect of 3 points (the lower bound of Ahler and Sood's 95% confidence interval).
+
+```{r}
+library(powerrules)
+
+result <- from_sd(sd_y = 20.8) |>
+  find_power(n = 500, tau = 3)
+```
+
+## Generating the DeclareDesign code
+
+`write_DeclareDesign()` takes the result and prints a self-contained DeclareDesign script:
+
+```{r}
+write_DeclareDesign(result)
+```
+
+## Running the generated code
+
+The generated code runs 500 simulations and reports the simulated power.
+Because DeclareDesign uses two-sided tests, the result closely matches the analytical 74% from powerrules for power levels above about 20%.
+
+```{r}
+library(DeclareDesign)
+
+my_design <-
+  declare_model(
+    N = 1000,
+    U = rnorm(N),
+    potential_outcomes(Y ~ 3 * Z + 20.8 * U)
+  ) +
+  declare_inquiry(ATE = mean(Y_Z_1 - Y_Z_0)) +
+  declare_assignment(Z = complete_ra(N, prob = 0.5)) +
+  declare_measurement(Y = reveal_outcomes(Y ~ Z)) +
+  declare_estimator(Y ~ Z, inquiry = "ATE")
+
+diagnosis <- diagnose_design(my_design, sims = 500,
+  diagnosands = declare_diagnosands(
+    power = mean(p.value <= 0.10)
+  ))
+print(diagnosis)
+```
+
+## References

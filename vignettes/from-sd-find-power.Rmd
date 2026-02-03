@@ -1,0 +1,78 @@
+---
+title: "I have the SD of my outcome. What is my power?"
+output: rmarkdown::html_vignette
+bibliography: bibliography.bib
+vignette: >
+  %\VignetteIndexEntry{I have the SD of my outcome. What is my power?}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = FALSE,
+  comment = "#>"
+)
+```
+
+Suppose we know the standard deviation of our outcome in a reference population, we know how many respondents we can recruit, and we have a specific treatment effect in mind.
+We want to find the power---the probability that the study will produce a statistically significant result if the true effect equals our assumed value.
+
+`from_sd()` piped into `find_power()` answers this question.
+
+## Without control variables
+
+Imagine we are planning to replicate @Ahler2018, who find that correcting respondents' misperceptions of their out-party reduces affective polarization.
+In their experiment, respondents first report their perceptions of the percent of out-party members with certain demographic attributes, then receive the correct information.
+Compared to a control group, the treatment group evaluated supporters of the out-party more favorably on a 101-point feeling thermometer.
+Ahler and Sood estimate a treatment effect of 6.4 points with a 95% confidence interval of [3, 10].
+@Broockman2022 closely replicate this result, estimating a treatment effect of 3.9 with a 90% confidence interval of [1.1, 6.6].
+
+Suppose we plan to run this experiment on a CES module with 1,000 respondents (500 per condition).
+To predict the standard error using Rule 3 of @Rainey_2026, we need the standard deviation of the outcome in a reference population.
+The 2020 American National Elections Study (ANES) asks a similar question: respondents report their feelings toward the Democratic or Republican *party* on a 101-point feeling thermometer.
+Ahler and Sood ask about *supporters of* the party rather than the party itself, so the measures are not identical, but the ANES provides a reasonable approximation.
+The standard deviation of the ANES feeling thermometer responses is 20.8.
+
+The lower bound of Ahler and Sood's 95% confidence interval is 3 points.
+We use this as our assumed effect, tau = 3.
+
+```{r}
+library(powerrules)
+
+from_sd(sd_y = 20.8) |>
+  find_power(n = 500, tau = 3)
+```
+
+The output predicts the standard error from the SD and sample size (Rule 3), then computes power for the assumed effect (Rule 2).
+With 500 per condition and no control variables, the study has 74% power to detect a treatment effect of 3 points.
+This falls below the conventional 80% threshold.
+
+## With a pre-post measurement strategy
+
+@Clifford2021 suggest measuring the outcome both before and after treatment and controlling for the pre-treatment measure.
+In a small pilot with 250 respondents, @Cutler2024 measure feelings toward supporters of the out-party before and after the treatment and find that the pre-treatment measure has an R^2^ of about 73%.
+If we set R^2^ = 0.40---a conservative assumption given the pilot result---the power changes substantially:
+
+```{r}
+from_sd(sd_y = 20.8, r_squared = 0.40) |>
+  find_power(n = 500, tau = 3)
+```
+
+The power rises from 74% to 90%.
+The pre-post adjustment shrinks the standard error enough to push the study above 80% power for a treatment effect of 3 points.
+
+## Connection to `find_mde()`
+
+`find_power()` and `find_mde()` are two perspectives on the same calculation.
+The `from_sd() |> find_mde()` pipeline with the same inputs shows that the MDE at 80% power is 3.27 points (without controls).
+Since tau = 3 is smaller than 3.27, the power for tau = 3 must be below 80%---and it is (74%).
+
+## How to choose tau
+
+The `tau` argument is the treatment effect assumed for computing power.
+The lower bound of a confidence interval from a closely related study is a useful starting point [@Rainey_2026].
+In the Ahler and Sood example, the lower bound of their 95% confidence interval is 3 points, so tau = 3 represents the smallest effect consistent with their findings.
+Choosing a tau that is too large makes the study appear more powerful than it is.
+
+## References

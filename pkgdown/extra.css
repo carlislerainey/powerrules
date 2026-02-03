@@ -1,0 +1,4 @@
+/* Differentiate console output from source code */
+pre:not(.sourceCode) {
+  font-size: 0.75em;
+}

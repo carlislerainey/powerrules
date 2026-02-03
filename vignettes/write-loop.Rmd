@@ -1,0 +1,85 @@
+---
+title: "Computing power with a for-loop simulation"
+output: rmarkdown::html_vignette
+bibliography: bibliography.bib
+vignette: >
+  %\VignetteIndexEntry{Computing power with a for-loop simulation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = FALSE,
+  comment = "#>"
+)
+```
+
+`write_loop()` generates copy-pasteable R code for a for-loop simulation that confirms the analytical power calculation.
+The simulation uses potential outcomes with a constant additive treatment effect and HC2 robust standard errors (via the sandwich package).
+
+## Running the pipeline
+
+Suppose we plan to replicate @Ahler2018, who find that correcting respondents' misperceptions of their out-party reduces affective polarization.
+The standard deviation of feeling thermometer responses in the 2020 ANES is 20.8.
+We plan to recruit 500 respondents per condition and assume a treatment effect of 3 points (the lower bound of Ahler and Sood's 95% confidence interval).
+
+```{r}
+library(powerrules)
+
+result <- from_sd(sd_y = 20.8) |>
+  find_power(n = 500, tau = 3)
+```
+
+## Generating the simulation code
+
+`write_loop()` takes the result and prints a self-contained simulation script:
+
+```{r}
+write_loop(result)
+```
+
+## Running the generated code
+
+The simulation runs 500 experiments with one-sided tests (size 0.05 for 90% CIs), matching Rule 2 from @Rainey_2026 exactly.
+The simulated power should be close to the analytical 74% from powerrules.
+
+```{r}
+library(sandwich)  # for HC2 robust SEs
+
+# --- Parameters ---
+n    <- 500    # respondents per condition
+tau  <- 3      # treatment effect
+sd_y <- 20.8   # SD(Y) in control group
+
+# --- Simulate 500 experiments ---
+n_sims <- 500
+set.seed(1234)
+reject <- logical(n_sims)
+
+for (i in seq_len(n_sims)) {
+  # Potential outcomes: constant, additive treatment effect
+  y0 <- rnorm(2 * n, mean = 0, sd = sd_y)
+  y1 <- y0 + tau
+
+  # Complete random assignment: n to each condition
+  z <- sample(rep(0:1, each = n))
+
+  # Reveal observed outcome
+  y <- ifelse(z == 1, y1, y0)
+
+  # Estimate via OLS with HC2 robust SEs
+  fit <- lm(y ~ z)
+  est <- coef(fit)["z"]
+  se  <- sqrt(vcovHC(fit, type = "HC2")["z", "z"])
+
+  # One-sided p-value and size-0.05 test
+  p_val <- pnorm(est / se, lower.tail = FALSE)
+  reject[i] <- p_val < 0.05
+}
+
+cat("Simulated power:", round(mean(reject) * 100), "%\n")
+cat("Expected:       ~74%\n")
+```
+
+## References

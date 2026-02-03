@@ -1,0 +1,52 @@
+---
+title: "I have pilot data. What is my power?"
+output: rmarkdown::html_vignette
+bibliography: bibliography.bib
+vignette: >
+  %\VignetteIndexEntry{I have pilot data. What is my power?}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = FALSE,
+  comment = "#>"
+)
+```
+
+Suppose we ran a pilot study and know our planned sample size for the full study.
+We have a specific treatment effect in mind.
+We want to find the power---the probability that the study will produce a statistically significant result if the true effect equals our assumed value.
+
+`from_pilot()` piped into `find_power()` answers this question.
+
+## Example
+
+@Cutler2024 run a pilot replication of @Ahler2018, who find that correcting respondents' misperceptions of their out-party reduces affective polarization on a 101-point feeling thermometer.
+Ahler and Sood estimate a treatment effect of 6.4 points with a 95% confidence interval of [3, 10].
+Cutler et al. use the pre-post measurement strategy of @Clifford2021, measuring feelings toward supporters of the out-party before and after treatment.
+In the pilot, with 85 per condition, they estimate a standard error of 2.13.
+
+Suppose we plan to run the full study with 500 per condition.
+The lower bound of Ahler and Sood's 95% confidence interval is 3 points.
+We use this as our assumed effect, tau = 3.
+
+```{r}
+library(powerrules)
+
+from_pilot(se_pilot = 2.13, n_pilot = 85) |>
+  find_power(n_planned = 500, tau = 3)
+```
+
+The output predicts the standard error using the pilot SE, sample size, and a conservative adjustment factor (Rule 9 from @Rainey_2026), then computes power for the assumed effect (Rule 2).
+With 500 per condition, the study has 92% power to detect a treatment effect of 3 points.
+
+## The conservative adjustment factor
+
+Standard errors estimated from small pilot studies are noisy.
+If the pilot SE happens to be smaller than the true SE, a naive rescaling would predict a standard error that is too small, overstating the study's power [@Albers2018; @Rainey_2026].
+The conservative adjustment factor inflates the predicted SE to protect against this risk.
+Despite the conservative adjustment, the study still has 92% power for tau = 3, suggesting the planned sample size is adequate.
+
+## References

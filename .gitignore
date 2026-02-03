@@ -1,0 +1,27 @@
+# R build artifacts
+*.tar.gz
+*.Rcheck/
+
+# R session files
+.Rhistory
+.RData
+.Rapp.history
+
+# RStudio
+.Rproj.user/
+*.Rproj
+
+# macOS
+.DS_Store
+
+# pkgdown site (deployed via GitHub Actions)
+docs/
+
+# Planning and reference (paper, specs, examples)
+src/
+
+# Task tracking
+todo/
+
+# Claude Code
+.claude/

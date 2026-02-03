@@ -1,0 +1,12 @@
+^src$
+^.*\.Rproj$
+^\.Rproj\.user$
+^\.claude$
+^docs$
+^_pkgdown\.yml$
+^Makefile$
+^README\.Rmd$
+^data-raw$
+^todo$
+^pkgdown$
+^\.github$

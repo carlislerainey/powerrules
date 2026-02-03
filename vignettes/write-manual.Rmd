@@ -1,0 +1,66 @@
+---
+title: "Computing power with manual calculations"
+output: rmarkdown::html_vignette
+bibliography: bibliography.bib
+vignette: >
+  %\VignetteIndexEntry{Computing power with manual calculations}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = FALSE,
+  comment = "#>"
+)
+```
+
+`write_manual()` generates copy-pasteable base R code that reproduces a powerrules calculation using the paper's constants (2.5 for 80% power, 3.3 for 95% power, 1.64 for the critical value with 90% CIs).
+This lets researchers verify the computation without any dependencies beyond base R.
+
+## Running the pipeline
+
+Suppose we plan to replicate @Ahler2018, who find that correcting respondents' misperceptions of their out-party reduces affective polarization.
+The standard deviation of feeling thermometer responses in the 2020 ANES is 20.8.
+We plan to recruit 500 respondents per condition and assume a treatment effect of 3 points (the lower bound of Ahler and Sood's 95% confidence interval).
+
+```{r}
+library(powerrules)
+
+result <- from_sd(sd_y = 20.8) |>
+  find_power(n = 500, tau = 3)
+```
+
+## Generating the manual calculation code
+
+`write_manual()` takes the result and prints a self-contained base R script:
+
+```{r}
+write_manual(result)
+```
+
+## Running the generated code
+
+The generated code computes the predicted SE and power using base R only.
+The result matches the analytical 74% from powerrules.
+
+```{r}
+# Manual power calculation
+
+# --- Inputs ---
+sd_y <- 20.8   # SD of outcome in reference population
+n    <- 500    # respondents per condition
+tau  <- 3      # assumed treatment effect
+
+# --- Predicted SE (Rule 3) ---
+se <- 2 * sd_y / sqrt(2 * n)
+
+# --- Power (Rule 2) ---
+power <- 1 - pnorm(1.64 - tau / se)
+
+cat("Predicted SE:        ", round(se, 2), "\n")
+cat("tau / SE:            ", round(tau / se, 2), "\n")
+cat("Power:               ", round(power * 100), "%\n")
+```
+
+## References

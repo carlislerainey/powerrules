@@ -1,0 +1,57 @@
+---
+title: "I have an existing study. What is my power?"
+output: rmarkdown::html_vignette
+bibliography: bibliography.bib
+vignette: >
+  %\VignetteIndexEntry{I have an existing study. What is my power?}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = FALSE,
+  comment = "#>"
+)
+```
+
+Suppose we have a published study with a design similar to the one we are planning.
+We know the standard error and sample size from that study, we know how many respondents we can recruit, and we have a specific treatment effect in mind.
+We want to find the power---the probability that the study will produce a statistically significant result if the true effect equals our assumed value.
+
+`from_existing()` piped into `find_power()` answers this question.
+
+## Example
+
+@Ahler2018 find that correcting respondents' misperceptions of their out-party reduces affective polarization.
+In their experiment, respondents first report their perceptions of the percent of out-party members with certain demographic attributes, then receive the correct information.
+Compared to a control group, the treatment group evaluated supporters of the out-party more favorably on a 101-point feeling thermometer.
+Ahler and Sood estimate a treatment effect of 6.4 points with a standard error of 1.8, a 95% confidence interval of [3, 10], and a sample of 268 per condition.
+
+Suppose we plan to run a similar experiment on a CES module with 1,000 respondents (500 per condition).
+The lower bound of Ahler and Sood's 95% confidence interval is 3 points.
+We use this as our assumed effect, tau = 3.
+
+```{r}
+library(powerrules)
+
+from_existing(se_existing = 1.8, n_existing = 268) |>
+  find_power(n_planned = 500, tau = 3)
+```
+
+The output scales the existing SE to the planned sample size (Rule 7), then computes power for the assumed effect (Rule 2).
+With 500 per condition, the study has 74% power to detect a treatment effect of 3 points.
+This falls below the conventional 80% threshold.
+
+## What makes an existing study "close enough"?
+
+The existing study and planned study should share the same design (balanced, between-subjects), a similar population, and the same or a similar outcome measure [@Rainey_2026].
+The existing study can differ in sample size and treatment---the rule adjusts for sample size and the researcher supplies the assumed effect separately.
+
+## Interaction designs
+
+For 2×2 factorial designs, `from_existing()` accepts `interaction = TRUE`.
+The SE computation is unchanged---the existing SE already encodes the design---but the output reports totals as N = 4n and labels the design as a 2×2 factorial.
+See `vignette("interactions")` for worked examples.
+
+## References

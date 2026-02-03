@@ -1,0 +1,8 @@
+bibentry(
+  bibtype  = "Misc",
+  title    = "Power Rules: Practical Advice for Computing Power (and Automating with Pilot Data)",
+  author   = "Carlisle Rainey",
+  year     = "2026",
+  url      = "https://doi.org/10.31219/osf.io/5am9q_v3",
+  doi      = "10.31219/osf.io/5am9q_v3"
+)

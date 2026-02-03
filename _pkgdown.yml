@@ -1,0 +1,101 @@
+url: https://carlislerainey.github.io/powerrules/
+template:
+  bootstrap: 5
+  bootswatch: litera
+
+reference:
+  - title: "Source functions"
+    desc: >
+      Describe where your SE information comes from.
+    contents:
+      - from_sd
+      - from_existing
+      - from_pilot
+  - title: "Goal functions"
+    desc: >
+      Compute MDE, power, or required sample size.
+    contents:
+      - find_mde
+      - find_power
+      - find_n
+  - title: "Guides"
+    desc: >
+      Interactive walkthrough that outputs a copyable pipeline.
+    contents:
+      - power_rules
+      - shiny_rules
+  - title: "Utilities"
+    desc: >
+      Generate code for external tools.
+    contents:
+      - write_DeclareDesign
+      - write_manual
+      - write_loop
+
+articles:
+  - title: "From a reference population SD"
+    contents:
+      - from-sd-find-mde
+      - from-sd-find-power
+      - from-sd-find-n
+  - title: "From an existing study"
+    contents:
+      - from-existing-find-mde
+      - from-existing-find-power
+      - from-existing-find-n
+  - title: "From pilot data"
+    contents:
+      - from-pilot-find-mde
+      - from-pilot-find-power
+      - from-pilot-find-n
+  - title: "Computing power other ways"
+    contents:
+      - write-DeclareDesign
+      - write-manual
+      - write-loop
+  - title: "More topics"
+    contents:
+      - interactions
+
+navbar:
+  structure:
+    left: [reference, articles]
+    right: [search, github]
+  components:
+    articles:
+      text: "Articles"
+      menu:
+        - text: "From a reference population SD"
+        - text: "Find MDE"
+          href: articles/from-sd-find-mde.html
+        - text: "Find power"
+          href: articles/from-sd-find-power.html
+        - text: "Find sample size"
+          href: articles/from-sd-find-n.html
+        - text: "---"
+        - text: "From an existing study"
+        - text: "Find MDE"
+          href: articles/from-existing-find-mde.html
+        - text: "Find power"
+          href: articles/from-existing-find-power.html
+        - text: "Find sample size"
+          href: articles/from-existing-find-n.html
+        - text: "---"
+        - text: "From pilot data"
+        - text: "Find MDE"
+          href: articles/from-pilot-find-mde.html
+        - text: "Find power"
+          href: articles/from-pilot-find-power.html
+        - text: "Find sample size"
+          href: articles/from-pilot-find-n.html
+        - text: "---"
+        - text: "Computing power other ways"
+        - text: "with DeclareDesign"
+          href: articles/write-DeclareDesign.html
+        - text: "with Manual Calculations"
+          href: articles/write-manual.html
+        - text: "with a For-Loop Simulation"
+          href: articles/write-loop.html
+        - text: "---"
+        - text: "Interactions"
+          href: articles/interactions.html

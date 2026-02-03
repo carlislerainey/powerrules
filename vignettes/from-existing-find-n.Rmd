@@ -1,0 +1,77 @@
+---
+title: "I have an existing study. How many respondents do I need?"
+output: rmarkdown::html_vignette
+bibliography: bibliography.bib
+vignette: >
+  %\VignetteIndexEntry{I have an existing study. How many respondents do I need?}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = FALSE,
+  comment = "#>"
+)
+```
+
+Suppose we have a published study with a design similar to the one we are planning.
+We know the standard error and sample size from that study, and we have a specific treatment effect in mind.
+We want to find the sample size required for the study to have adequate power.
+
+`from_existing()` piped into `find_n()` answers this question.
+
+## From Ahler and Sood
+
+@Ahler2018 find that correcting respondents' misperceptions of their out-party reduces affective polarization.
+In their experiment, respondents first report their perceptions of the percent of out-party members with certain demographic attributes, then receive the correct information.
+Compared to a control group, the treatment group evaluated supporters of the out-party more favorably on a 101-point feeling thermometer.
+Ahler and Sood estimate a treatment effect of 6.4 points with a standard error of 1.8, a 95% confidence interval of [3, 10], and a sample of 268 per condition.
+
+The lower bound of Ahler and Sood's 95% confidence interval is 3 points.
+We use this as our assumed effect, tau = 3.
+We want 95% power.
+
+```{r}
+library(powerrules)
+
+from_existing(se_existing = 1.8, n_existing = 268) |>
+  find_n(tau = 3, power = 0.95)
+```
+
+The study requires 1,045 respondents per condition (2,090 total) for 95% power to detect a treatment effect of 3 points.
+
+## From Broockman, Kalla, and Westwood
+
+@Broockman2022 closely replicate Ahler and Sood's result, estimating a treatment effect of 3.9 with a 90% confidence interval of [1.1, 6.6].
+They report a standard error of 1.67 with 502 per condition.
+
+```{r}
+from_existing(se_existing = 1.67, n_existing = 502) |>
+  find_n(tau = 3, power = 0.95)
+```
+
+The Broockman et al. estimate implies a larger required sample: 1,684 per condition.
+The difference arises because Broockman et al. have a larger sample (502 vs. 268) but a similar SE (1.67 vs. 1.8), suggesting more variability in their data.
+Triangulating across multiple existing studies reveals how sensitive the sample size requirement is to the choice of source study [@Rainey_2026].
+
+## Using a 95% confidence interval
+
+By default, powerrules uses 90% confidence intervals (a size-0.05 test).
+If you prefer 95% confidence intervals (a size-0.025 test), set `ci = 0.95`.
+The stricter test requires a larger sample.
+
+```{r}
+from_existing(se_existing = 1.8, n_existing = 268) |>
+  find_n(tau = 3, power = 0.80, ci = 0.95)
+```
+
+With 95% confidence intervals and 80% power, the study requires 758 per condition---about 27% more than the 597 per condition required with 90% confidence intervals at the same power level.
+
+## Interaction designs
+
+For 2×2 factorial designs, `from_existing()` accepts `interaction = TRUE`.
+The SE computation is unchanged---the existing SE already encodes the design---but the output reports totals as N = 4n and labels the design as a 2×2 factorial.
+See `vignette("interactions")` for worked examples.
+
+## References
