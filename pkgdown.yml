@@ -1,0 +1,21 @@
+pandoc: 3.1.11
+pkgdown: 2.2.0
+pkgdown_sha: ~
+articles:
+  from-existing-find-mde: from-existing-find-mde.html
+  from-existing-find-n: from-existing-find-n.html
+  from-existing-find-power: from-existing-find-power.html
+  from-pilot-find-mde: from-pilot-find-mde.html
+  from-pilot-find-n: from-pilot-find-n.html
+  from-pilot-find-power: from-pilot-find-power.html
+  from-sd-find-mde: from-sd-find-mde.html
+  from-sd-find-n: from-sd-find-n.html
+  from-sd-find-power: from-sd-find-power.html
+  interactions: interactions.html
+  write-DeclareDesign: write-DeclareDesign.html
+  write-loop: write-loop.html
+  write-manual: write-manual.html
+last_built: 2026-02-03T03:13Z
+urls:
+  reference: https://carlislerainey.github.io/powerrules/reference
+  article: https://carlislerainey.github.io/powerrules/articles
