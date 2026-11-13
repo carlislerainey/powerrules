@@ -30,7 +30,7 @@ Ahler and Sood estimate a treatment effect of 6.4 points with a standard error o
 @Broockman2022 closely replicate this result, estimating a treatment effect of 3.9 with a 90% confidence interval of [1.1, 6.6].
 
 Suppose we plan to run a similar experiment on a CES module with 1,000 respondents (500 per condition).
-Using the SE and sample size from Ahler and Sood, we predict the standard error in our larger study (Rule 7 from @Rainey_2026).
+Using the SE and sample size from Ahler and Sood, we predict the standard error in our larger study (Pilot Rule 1, which is Rule 1 from @Rainey2024pilot).
 
 ```{r}
 library(powerrules)
@@ -39,12 +39,12 @@ from_existing(se_existing = 1.8, n_existing = 268) |>
   find_mde(n_planned = 500)
 ```
 
-The output scales the existing SE to the planned sample size (Rule 7), then computes the MDE at 80% and 95% power (Rule 5).
+The output scales the existing SE to the planned sample size (Pilot Rule 1), then computes the MDE at 80% and 95% power (Rule 5 from @Rainey_2026).
 With 500 per condition, the study has 80% power to detect a treatment effect of 3.28 points on the 101-point scale.
 
 ## What makes an existing study "close enough"?
 
-The existing study and planned study should share the same design (balanced, between-subjects), a similar population, and the same or a similar outcome measure [@Rainey_2026].
+The existing study and planned study should share the same design (balanced, between-subjects), a similar population, and the same or a similar outcome measure [@Rainey2024pilot].
 The existing study can differ in sample size and treatment---the rule adjusts for sample size and the researcher supplies the assumed effect separately.
 In the example above, Ahler and Sood's study uses the same outcome measure (feeling thermometer toward out-party supporters) and a similar population (U.S. adults).
 

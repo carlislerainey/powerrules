@@ -18,74 +18,28 @@
 #' from_sd(sd_y = 20.8) |> find_power(n = 500, tau = 3) |> write_loop()
 write_loop <- function(result, tau = NULL) {
 
-  # --- Validation ---
-  if (!inherits(result, "power_result"))
-    stop("`result` must be a power_result object ",
-         "(use find_mde(), find_power(), or find_n())")
-
-  if (result$source$interaction)
-    stop("write_loop() does not yet support interaction designs. ",
-         "This feature is planned for a future version.")
-
-  if (!is.null(tau)) {
-    if (!is.numeric(tau) || length(tau) != 1 || is.na(tau) || tau <= 0)
-      stop("`tau` must be a positive number")
-  }
-
-  ci <- result$ci
-  if (!(ci %in% c(0.90, 0.95)))
-    stop("`ci` must be 0.90 or 0.95")
-
-  # --- Tau extraction ---
-  tau_from_mde <- FALSE
-  if (is.null(tau)) {
-    if (result$goal == "mde") {
-      tau <- result$mde_80
-      tau_from_mde <- TRUE
-    } else {
-      tau <- result$tau
-    }
-  }
-
-  # --- sd_y determination ---
+  check_result(result, "write_loop")
+  sim <- sim_setup(result, tau)
   source <- result$source
-  n_planned <- result$n_planned
-  sd_backcalc <- FALSE
+  ci <- result$ci
 
-  if (source$type == "sd") {
-    if (source$r_squared > 0) {
-      sd_y <- source$sd_y * sqrt(1 - source$r_squared)
-      sd_comment <- paste0("   # effective SD: sd_y * sqrt(1 - r_squared) = ",
-                           fmt(sd_y))
-    } else {
-      sd_y <- source$sd_y
-      sd_comment <- "   # SD(Y) in control group"
-    }
+  # --- Comment on where the SD comes from ---
+  sd_comment <- if (sim$sd_backcalc) {
+    "  # back-calculated from predicted SE"
+  } else if (source$r_squared > 0) {
+    paste0("   # effective SD: sd_y * sqrt(1 - r_squared) = ", sim$sd_str)
   } else {
-    sd_y <- result$se * sqrt(n_planned / 2)
-    sd_backcalc <- TRUE
-    sd_comment <- "  # back-calculated from predicted SE"
-  }
-
-  # --- Format values ---
-  n_str <- fmt_val(n_planned)
-  tau_str <- if (tau_from_mde) fmt(tau) else fmt_val(tau)
-  sd_str <- if (source$type == "sd" && source$r_squared == 0) {
-    fmt_val(sd_y)
-  } else {
-    fmt(sd_y)
+    "   # SD(Y) in control group"
   }
 
   # --- Determine expected power comment ---
-  if (result$goal == "mde") {
-    expected_comment <- "# Expected: ~80%"
-  } else {
-    expected_pct <- round(result$power * 100)
-    expected_comment <- paste0("# Expected: ~", expected_pct, "%")
-  }
+  # Computed from the simulated tau and the predicted SE (Rule 2), so the
+  # comment stays right when the caller overrides tau
+  expected_power <- 1 - pnorm(qnorm(1 - (1 - ci) / 2) - sim$tau / result$se)
+  expected_comment <- paste0("# Expected: ~", round(expected_power * 100), "%")
 
   # Tau comment depends on whether tau was defaulted from MDE
-  tau_comment <- if (tau_from_mde) {
+  tau_comment <- if (sim$tau_from_mde) {
     "   # treatment effect (MDE at 80% power)"
   } else {
     "      # treatment effect"
@@ -99,8 +53,8 @@ write_loop <- function(result, tau = NULL) {
   }
 
   # --- Test size ---
-  test_size <- if (ci == 0.90) "0.05" else "0.025"
-  test_comment <- paste0("# One-sided p-value and size-", test_size, " test")
+  size <- fmt_val(test_size(ci))
+  test_comment <- paste0("# One-sided p-value and size-", size, " test")
 
   # --- Build code string ---
   code <- paste0(
@@ -110,9 +64,9 @@ write_loop <- function(result, tau = NULL) {
     "library(sandwich)  # for HC2 robust SEs\n",
     "\n",
     "# --- Parameters ---\n",
-    "n    <- ", n_str, n_comment, "\n",
-    "tau  <- ", tau_str, tau_comment, "\n",
-    "sd_y <- ", sd_str, sd_comment, "\n",
+    "n    <- ", fmt_val(result$n_planned), n_comment, "\n",
+    "tau  <- ", sim$tau_str, tau_comment, "\n",
+    "sd_y <- ", sim$sd_str, sd_comment, "\n",
     "\n",
     "# --- Simulate 500 experiments ---\n",
     "n_sims <- 500\n",
@@ -137,7 +91,7 @@ write_loop <- function(result, tau = NULL) {
     "\n",
     "  ", test_comment, "\n",
     "  p_val <- pnorm(est / se, lower.tail = FALSE)\n",
-    "  reject[i] <- p_val < ", test_size, "\n",
+    "  reject[i] <- p_val < ", size, "\n",
     "}\n",
     "\n",
     "cat(\"Simulated power:\", round(mean(reject) * 100), \"%\\n\")\n",
@@ -145,30 +99,8 @@ write_loop <- function(result, tau = NULL) {
 
   # --- Print formatted output ---
   cat(rule_line("For-Loop Simulation"), "\n")
-
-  if (tau_from_mde) {
-    cat("\n")
-    cat(wrap_sentence(
-      paste0("Note: Using tau = ", fmt(tau),
-             " (MDE at 80% power). Override with ",
-             "write_loop(result, tau = ...).")
-    ), "\n")
-  }
-
-  if (sd_backcalc) {
-    cat("\n")
-    cat(wrap_sentence(
-      paste0("Note: The simulation uses a back-calculated SD ",
-             "(from the predicted SE). For a more natural mapping, use ",
-             "from_sd() as the source.")
-    ), "\n")
-  }
-
-  cat("\n")
-  code_lines <- strsplit(code, "\n")[[1]]
-  for (line in code_lines) {
-    cat("  ", line, "\n", sep = "")
-  }
+  print_sim_notes(sim, "write_loop", "simulation")
+  print_code(code)
 
   invisible(code)
 }

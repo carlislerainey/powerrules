@@ -7,9 +7,10 @@
 <!-- badges: end -->
 
 Power analysis for balanced, between-subjects designs using the rules
-from Rainey (2026) “Power Rules: Practical Advice for Computing Power
-(and Automating with Pilot Data).” The
-[preprint](http://dx.doi.org/10.31219/osf.io/5am9q_v3) is on OSF.
+from Rainey (2026) “Power Rules: Practical Advice for Computing
+Statistical Power” and its companion paper, “Automating Power Analysis
+with Pilot Data.” The [preprint](https://osf.io/preprints/osf/5am9q) is
+on OSF.
 
 ## Quick Start
 
@@ -126,21 +127,19 @@ approach.
 ## Citation
 
 Rainey, Carlisle (2026). “Power Rules: Practical Advice for Computing
-Power (and Automating with Pilot Data).” DOI:
-[10.31219/osf.io/5am9q_v3](https://doi.org/10.31219/osf.io/5am9q_v3).
+Statistical Power.” *Political Analysis*. Forthcoming. Preprint:
+<https://osf.io/preprints/osf/5am9q>.
 
 BibTeX:
 
 ``` bibtex
-@misc{Rainey_2026,
-  title = {Power Rules: Practical Advice for Computing Power
-           (and Automating with Pilot Data)},
+@article{Rainey_2026,
+  title = {Power Rules: Practical Advice for Computing Statistical Power},
   author = {Rainey, Carlisle},
+  journal = {Political Analysis},
   year = {2026},
-  month = feb,
-  url = {http://dx.doi.org/10.31219/osf.io/5am9q_v3},
-  DOI = {10.31219/osf.io/5am9q_v3},
-  publisher = {Center for Open Science}
+  note = {Forthcoming},
+  url = {https://osf.io/preprints/osf/5am9q}
 }
 ```
 

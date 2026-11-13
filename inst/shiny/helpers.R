@@ -1,25 +1,21 @@
 # helpers.R — Rendering functions for the Power Rules Shiny app
 # Produces color-coded HTML paralleling print.R's console output.
 
-# --- Formatting helpers (same logic as print.R) ----------------------------
+# --- Package internals ------------------------------------------------------
+# The app ships inside powerrules, so it shares the package's formatters and
+# text builders with the console output rather than keeping copies of them.
 
-fmt <- function(x, digits = 2) formatC(x, format = "f", digits = digits)
-
-fmt_val <- function(x) {
-  if (abs(x - round(x)) < 1e-10) {
-    formatC(round(x), format = "f", digits = 0)
-  } else {
-    s <- formatC(x, format = "f", digits = 6)
-    s <- sub("0+$", "", s)
-    sub("\\.$", "", s)
-  }
-}
-
-fmt_int <- function(x) format(ceiling(x), big.mark = ",")
-
-fmt_pct <- function(x) paste0(round(x * 100), "%")
-
-mde_factor <- function(power, ci) qnorm(1 - (1 - ci) / 2) + qnorm(power)
+fmt                 <- powerrules:::fmt
+fmt_val             <- powerrules:::fmt_val
+fmt_int             <- powerrules:::fmt_int
+fmt_prob            <- powerrules:::fmt_prob
+fmt_power           <- powerrules:::fmt_power
+mde_factor          <- powerrules:::mde_factor
+mde_factor_table    <- powerrules:::mde_factor_table
+format_n_rule       <- powerrules:::format_n_rule
+build_sentence      <- powerrules:::build_sentence
+build_note          <- powerrules:::build_note
+build_pipeline_code <- powerrules:::build_pipeline_code
 
 # --- HTML span wrappers ----------------------------------------------------
 
@@ -74,7 +70,7 @@ render_se_line <- function(source_type, interaction, inputs, use_r2, result) {
 
     formula <- paste0("Predicted SE = sqrt(", n_exist, " / ", n_plan,
                        ") \u00d7 ", se_exist, " = ", se_val)
-    fline(formula, "[Rule 7]")
+    fline(formula, "[Pilot Rule 1]")
 
   } else { # pilot
     n_pil  <- if (!is.null(inputs$n_pilot))  vi(fmt_val(inputs$n_pilot))  else vb()
@@ -90,7 +86,7 @@ render_se_line <- function(source_type, interaction, inputs, use_r2, result) {
     formula <- paste0("Predicted SE = sqrt(", n_pil, " / ", n_plan,
                        ") \u00d7 (sqrt(", cf_inner, ") + 1) \u00d7 ",
                        se_pil, " = ", se_val)
-    rule <- if (interaction) "[Rule 9*]" else "[Rule 9]"
+    rule <- if (interaction) "[Pilot Rule 3*]" else "[Pilot Rule 3]"
     fline(formula, rule)
   }
 }
@@ -121,7 +117,7 @@ render_power_lines <- function(ci, inputs, result) {
 
   se_str    <- if (has_result) vr(fmt(result$se))         else vb()
   ratio_str <- if (has_result) vr(fmt(result$ratio))      else vb()
-  power_str <- if (has_result) vr(fmt_pct(result$power))  else vb()
+  power_str <- if (has_result) vr(fmt_power(result$power)) else vb()
 
   line1 <- paste0("tau / SE = ", tau_str, " / ", se_str, " = ", ratio_str)
   line2 <- paste0("Power = 1 \u2212 pnorm(", cv, " \u2212 ", ratio_str,
@@ -142,19 +138,19 @@ render_cf_line <- function(interaction, inputs, result) {
     paste0("1 / ", n_pil)
   }
 
-  rule <- if (interaction) "[Rule 9*]" else "[Rule 9]"
+  rule <- if (interaction) "[Pilot Rule 3*]" else "[Pilot Rule 3]"
   fline(paste0("Conservative factor = sqrt(", inner, ") + 1 = ", cf_val), rule)
 }
 
 # --- MDE factor line (find_n) ----------------------------------------------
 
 render_mf_line <- function(ci, power_level, result) {
-  ci_arg  <- fmt_val(1 - (1 - ci) / 2)
-  pow_arg <- fmt(power_level)
+  ci_arg  <- fmt_prob(1 - (1 - ci) / 2)
+  pow_arg <- fmt_prob(power_level)
   mf_val  <- if (!is.null(result)) vr(fmt(result$mde_factor_val)) else vb()
 
   fline(paste0("MDE factor = qnorm(", ci_arg, ") + qnorm(", pow_arg,
-               ") = ", mf_val), "[Table 2]")
+               ") = ", mf_val), mde_factor_table(power_level, ci))
 }
 
 # --- Sample size formula lines (find_n) ------------------------------------
@@ -200,14 +196,10 @@ render_n_lines <- function(source_type, interaction, inputs, use_r2, result) {
     total_str <- vr(fmt_int(total))
     cond_note <- if (n_cond == 4) ", 4 conditions" else ""
 
-    rule_num <- switch(source_type, sd = "6", existing = "8", pilot = "10")
-    rule <- if (interaction) paste0("[Rule ", rule_num, "*]")
-            else paste0("[Rule ", rule_num, "]")
-
     result_html <- paste0(
       '<span class="formula-continuation">= ', n_str,
       ' per condition (', total_str, ' total', cond_note, ')</span>')
-    lines <- paste(lines, fline(result_html, rule), sep = "\n")
+    lines <- paste(lines, fline(result_html, format_n_rule(result)), sep = "\n")
   }
 
   lines
@@ -257,7 +249,7 @@ render_result_highlight <- function(result, goal_type, interaction) {
   } else if (goal_type == "power") {
     paste0('<div class="result-highlight">',
            'Power = <span class="result-value-red">',
-           fmt_pct(result$power), '</span></div>')
+           fmt_power(result$power), '</span></div>')
 
   } else {
     total <- n_cond * result$n_planned
@@ -271,15 +263,10 @@ render_result_highlight <- function(result, goal_type, interaction) {
 
 # --- Manuscript sentence ----------------------------------------------------
 
-render_sentence <- function(result, interaction) {
+render_sentence <- function(result) {
   if (is.null(result)) return("")
 
-  effect_label   <- if (interaction) "interaction" else "treatment effect"
-  effect_article <- if (interaction) "an interaction" else "a treatment effect"
-  n_cond         <- if (interaction) 4 else 2
-
-  sentence <- powerrules::build_sentence(result, effect_label,
-                                          effect_article, n_cond)
+  sentence <- build_sentence(result)
 
   paste0('<div class="sentence-box">',
          '<div class="sentence-header">Manuscript sentence (edit as needed)</div>',
@@ -294,7 +281,7 @@ render_sentence <- function(result, interaction) {
 render_note <- function(result) {
   if (is.null(result)) return("")
 
-  note <- powerrules::build_note(result)
+  note <- build_note(result)
   if (is.null(note)) return("")
 
   paste0('<div class="note-box">', htmltools::htmlEscape(note), '</div>')
@@ -309,13 +296,24 @@ render_pipeline <- function(source_type, goal_type, interaction, ci,
   pipe_inputs$ci <- ci
   pipe_inputs$power <- power_level
 
-  pipeline <- powerrules::build_pipeline_code(source_type, goal_type,
-                                               pipe_inputs)
+  pipeline <- build_pipeline_code(source_type, goal_type, pipe_inputs)
+
+  # a script that runs on its own: install, load, compute
+  goal_label <- switch(goal_type, mde = "MDE", power = "power",
+                       n = "sample size")
+  script <- paste0(
+    "# install package\n",
+    "pak::pak(\"carlislerainey/powerrules\")\n\n",
+    "# load package\n",
+    "library(powerrules)\n\n",
+    "# compute ", goal_label, "\n",
+    pipeline
+  )
 
   paste0('<div class="pipeline-box">',
          '<div class="pipeline-header">Save this to your script</div>',
          '<code class="pipeline-code" id="pipeline-text">',
-         htmltools::htmlEscape(pipeline), '</code>',
+         htmltools::htmlEscape(script), '</code>',
          '<button class="copy-btn" onclick="copyText(\'pipeline-text\')">',
          'Copy</button></div>')
 }

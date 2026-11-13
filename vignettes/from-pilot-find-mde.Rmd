@@ -36,13 +36,13 @@ from_pilot(se_pilot = 2.13, n_pilot = 85) |>
   find_mde(n_planned = 500)
 ```
 
-The output predicts the standard error in the full study using the pilot SE, sample size, and a conservative adjustment factor (Rule 9 from @Rainey_2026).
+The output predicts the standard error in the full study using the pilot SE, sample size, and a conservative adjustment factor (Pilot Rule 3, which is Rule 3 from @Rainey2024pilot).
 With 500 per condition, the study has 80% power to detect a treatment effect of 2.42 points.
 
 ## The conservative adjustment factor
 
 Standard errors estimated from small pilot studies are noisy.
-If the pilot SE happens to be smaller than the true SE, a naive rescaling would predict a standard error that is too small, making the study appear more sensitive than it is [@Albers2018; @Rainey_2026].
+If the pilot SE happens to be smaller than the true SE, a naive rescaling would predict a standard error that is too small, making the study appear more sensitive than it is [@Albers2018; @Rainey2024pilot].
 The conservative adjustment factor, sqrt(1/n~pilot~) + 1, inflates the predicted SE to protect against this risk.
 In this example, the conservative factor is sqrt(1/85) + 1 = 1.11, inflating the predicted SE by about 11%.
 

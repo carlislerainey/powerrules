@@ -1,19 +1,27 @@
-# Verify every worked example from Rainey (2026) "Power Rules" using the
-# powerrules pipeline functions. For each example, the paper's sentence(s)
-# are quoted as comments, then the pipeline is run and the key numerical
-# result is checked.
+# Verify every worked example using the powerrules pipeline functions. The
+# examples come from two papers:
 #
-# The paper rounds MDE factors to one decimal place (2.5 for 80% power,
+#   - The tutorial paper: Rainey (2026), "Power Rules: Practical Advice for
+#     Computing Statistical Power" (Rules 1-7; interactions in Appendix 2).
+#   - The pilot paper: the companion paper, "Automating Power Analysis with
+#     Pilot Data" (its Rules 1-4, cited in the package as Pilot Rules 1-4).
+#
+# For each example, the paper's sentence(s) are quoted as comments, then the
+# pipeline is run and the key numerical result is checked.
+#
+# The papers round MDE factors to one decimal place (2.5 for 80% power,
 # 3.3 for 95% power with 90% CI). The package uses exact values
 # (qnorm(0.95) + qnorm(power)), producing small differences in computed
-# results. For example, the paper reports n = 1,050 for Example 2a while
-# the pipeline computes n = 1,041. Tolerance of 0.02 (2%) accommodates
-# this rounding throughout.
+# results. For example, the tutorial paper reports n = 1,047 for Example 2a
+# while the pipeline computes n = 1,041. Tolerance of 0.02 (2%) accommodates
+# this rounding throughout; the rounded 2.5 alone moves a sample size by
+# about 1.1%. The pipeline's exact values are pinned in the last section of
+# this file.
 
 tol <- 0.02
 
 # ===========================================================================
-# Example Set 1: Evaluating Power for a Fixed Sample Size
+# Example Set 1: Evaluating Power for a Fixed Sample Size (tutorial paper)
 #
 # Context: Replicating Ahler & Sood (2018). Correcting respondents'
 # misperceptions of their out-party reduces affective polarization on a
@@ -32,6 +40,14 @@ test_that("Example 1a: from SD, no controls, find MDE (n = 500)", {
   expect_equal(res$se, 1.32, tolerance = tol)
   expect_equal(res$mde_80, 3.30, tolerance = tol)
   expect_equal(res$mde_95, 4.36, tolerance = tol)
+})
+
+test_that("Example 1a (two-sided): from SD, no controls, find MDE (n = 500, 95% CI)", {
+  # "(a two-sided test would use 2.8 and 3.6, giving 3.70 and 4.75
+  #  points)"
+  res <- from_sd(sd_y = 20.8) |> find_mde(n = 500, ci = 0.95)
+  expect_equal(res$mde_80, 3.70, tolerance = tol)
+  expect_equal(res$mde_95, 4.75, tolerance = tol)
 })
 
 test_that("Example 1b: from SD, R-squared = 5%, find MDE (n = 500)", {
@@ -62,6 +78,7 @@ test_that("Example 1c: from SD, R-squared = 40%, find MDE (n = 500)", {
 
 # ===========================================================================
 # Example Set 2: Finding the Required Sample Size
+# (2a-2b from the tutorial paper; 2c-2e from the pilot paper)
 #
 # Context: Same Ahler & Sood replication. Researcher can choose the
 # sample size and wants 95% power to detect a treatment effect of 3 points
@@ -70,10 +87,19 @@ test_that("Example 1c: from SD, R-squared = 40%, find MDE (n = 500)", {
 
 test_that("Example 2a: from SD, no controls, find n (95% power, tau = 3)", {
   # "we will need about
-  #  2 * (3.3 * 20.8 / 3)^2 = 1,050 respondents per condition for
+  #  2 * (3.3 * 20.8 / 3)^2 = 1,047 respondents per condition for
   #  95% power."
   res <- from_sd(sd_y = 20.8) |> find_n(tau = 3, power = 0.95)
-  expect_equal(res$n_planned, 1050, tolerance = tol)
+  expect_equal(res$n_planned, 1047, tolerance = tol)
+})
+
+test_that("Example 2a (two-sided): from SD, no controls, find n (95% power, tau = 3, 95% CI)", {
+  # "A researcher who prefers a two-sided test (a 95% confidence interval)
+  #  would use the factor 3.6 in place of 3.3 (Table 1). Without control
+  #  variables, this requires
+  #  2 * (3.6 * 20.8 / 3)^2 = 1,247 respondents per condition."
+  res <- from_sd(sd_y = 20.8) |> find_n(tau = 3, power = 0.95, ci = 0.95)
+  expect_equal(res$n_planned, 1247, tolerance = tol)
 })
 
 test_that("Example 2b: from SD, R-squared = 5%, find n (95% power, tau = 3)", {
@@ -117,6 +143,8 @@ test_that("Example 2e: from pilot (Cutler et al.), find n (95% power, tau = 3)",
 
 # ===========================================================================
 # Example Set 3: Interactions (Robbins, Pietryka, & Rainey 2024)
+# (3a-3b and the two-arm comparison from Appendix 2 of the tutorial paper;
+# 3c-3f from the pilot paper)
 #
 # Context: 2x2 factorial design (operation succeeds/fails x legislators
 # criticize/ignore). Hypothesized interaction of about 0.67 points on a
@@ -143,6 +171,21 @@ test_that("Example 3b: from SD, interaction, find n (95% power, tau = 0.67)", {
   expect_equal(res$n_planned, 389, tolerance = tol)
 })
 
+test_that("Example 3 comparison: from SD, two-arm, find n (80% power, tau = 0.67)", {
+  # "By comparison, a two-arm study to detect a treatment effect of 0.67
+  #  points with the same standard deviation would need only about
+  #  2 * (2.5 * 2.0 / 0.67)^2 = 112 respondents per condition (or 224 in
+  #  total) for 80% power, so testing the interaction roughly quadruples
+  #  the required sample size."
+  res <- from_sd(sd_y = 2.0) |> find_n(tau = 0.67, power = 0.80)
+  expect_equal(res$n_planned, 112, tolerance = tol)
+
+  # Quadruple the total: twice the conditions, twice the n per condition
+  res_int <- from_sd(sd_y = 2.0, interaction = TRUE) |>
+    find_n(tau = 0.67, power = 0.80)
+  expect_equal(4 * res_int$n_planned_raw, 4 * (2 * res$n_planned_raw))
+})
+
 test_that("Example 3c: from pilot, interaction, find n (80% power, tau = 0.67)", {
   # "the authors would need about
   #  75 * (2.5/0.67 * (sqrt(1/(2*75)) + 1) * 0.40)^2 = 195
@@ -164,10 +207,10 @@ test_that("Example 3d: from pilot, interaction, find n (95% power, tau = 0.67)",
 })
 
 test_that("Example 3e: from pilot, interaction, predicted SE (n_planned = 375)", {
-  # From the footnote: "the authors would conservatively predict the
-  #  standard error would be about
+  # From the footnote: the authors would conservatively predict a
+  # standard error of about
   #  sqrt(75/375) * (sqrt(1/150) + 1) * 0.40 = 0.19.
-  #  In the full, 1,500-respondent study, the standard error was 0.18."
+  # "In the full, 1,500-respondent study, the standard error was 0.18."
   res <- from_pilot(se_pilot = 0.40, n_pilot = 75, interaction = TRUE) |>
     find_mde(n_planned = 375)
   expect_equal(res$se, 0.19, tolerance = tol)
@@ -193,11 +236,13 @@ test_that("Example 3f: from pilot, interaction, power (n_planned = 375, tau = 0.
 #
 # Context: Same Ahler & Sood setting, but the researcher prefers a 95% CI
 # (size-0.025 test). The MDE factor changes from 2.5 to 2.8 for 80%
-# power.
+# power. This example is from the earlier combined preprint (February
+# 2026); neither current paper carries it, but the arithmetic still
+# checks the 95% CI path for an existing-study source.
 # ===========================================================================
 
 test_that("Example 4: from existing, find n (80% power, tau = 3, 95% CI)", {
-  # "researchers would need about
+  # The earlier preprint: "researchers would need about
   #  268 * (2.8/3 * 1.8)^2 = 756 respondents per condition (note the
   #  2.8 in place of the 2.5; using a 90% confidence interval would
   #  require about 603 respondents per condition)."
@@ -207,10 +252,79 @@ test_that("Example 4: from existing, find n (80% power, tau = 3, 95% CI)", {
 })
 
 test_that("Example 4 comparison: from existing, find n (80% power, tau = 3, 90% CI)", {
-  # The paper notes that "using a 90% confidence interval would require
+  # The earlier preprint notes that "using a 90% confidence interval would require
   #  about 603 respondents per condition."
   res_90ci <- from_existing(se_existing = 1.8, n_existing = 268) |>
     find_n(tau = 3, power = 0.80, ci = 0.90)
   expect_equal(res_90ci$n_planned, 603, tolerance = tol)
 })
 
+# ===========================================================================
+# Exact values for the paper's examples
+#
+# The tests above compare against the papers' rounded numbers (tolerance
+# 0.02). Here the pipeline's exact computed values are pinned: SEs and MDEs
+# to a tolerance of 0.01, sample sizes exactly.
+# ===========================================================================
+
+test_that("Exact values for the paper's examples", {
+  exact_cases <- list(
+    "Ahler & Sood: MDE from SD" = list(
+      res = from_sd(sd_y = 20.8) |> find_mde(n_planned = 500),
+      se = 1.3155, mde_80 = 3.2710, mde_95 = 4.3276),
+    "Ahler & Sood: MDE from SD, R^2 = 0.05" = list(
+      res = from_sd(sd_y = 20.8, r_squared = 0.05) |>
+        find_mde(n_planned = 500),
+      se = 1.2822),
+    "Ahler & Sood: MDE from SD, Clifford pre-post (R^2 = 0.40)" = list(
+      res = from_sd(sd_y = 20.8, r_squared = 0.40) |>
+        find_mde(n_planned = 500),
+      se = 1.0190, mde_80 = 2.5337),
+    "Ahler & Sood: n from SD (95% power)" = list(
+      res = from_sd(sd_y = 20.8) |> find_n(tau = 3, power = 0.95),
+      n_planned = 1041),
+    "Ahler & Sood: n from SD, R^2 = 0.05 (95% power)" = list(
+      res = from_sd(sd_y = 20.8, r_squared = 0.05) |>
+        find_n(tau = 3, power = 0.95),
+      n_planned = 989),
+    "Ahler & Sood: n from existing study (95% power)" = list(
+      res = from_existing(se_existing = 1.8, n_existing = 268) |>
+        find_n(tau = 3, power = 0.95),
+      n_planned = 1045),
+    "Broockman et al: n from existing study (95% power)" = list(
+      res = from_existing(se_existing = 1.67, n_existing = 502) |>
+        find_n(tau = 3, power = 0.95),
+      n_planned = 1684),
+    "Cutler et al: n from pilot (95% power)" = list(
+      res = from_pilot(se_pilot = 2.13, n_pilot = 85) |>
+        find_n(tau = 3, power = 0.95),
+      n_planned = 570),
+    "Robbins et al: n from SD, interaction (80% power)" = list(
+      res = from_sd(sd_y = 2.0, interaction = TRUE) |>
+        find_n(tau = 0.67, power = 0.80),
+      n_planned = 221),
+    "Robbins et al: n from SD, interaction (95% power)" = list(
+      res = from_sd(sd_y = 2.0, interaction = TRUE) |>
+        find_n(tau = 0.67, power = 0.95),
+      n_planned = 386),
+    "Robbins et al: n from pilot, interaction (80% power)" = list(
+      res = from_pilot(se_pilot = 0.40, n_pilot = 75, interaction = TRUE) |>
+        find_n(tau = 0.67, power = 0.80),
+      n_planned = 194),
+    "Robbins et al: n from pilot, interaction (95% power)" = list(
+      res = from_pilot(se_pilot = 0.40, n_pilot = 75, interaction = TRUE) |>
+        find_n(tau = 0.67, power = 0.95),
+      n_planned = 339)
+  )
+
+  for (nm in names(exact_cases)) {
+    k <- exact_cases[[nm]]
+    for (field in setdiff(names(k), "res")) {
+      if (field == "n_planned") {
+        expect_equal(k$res[[field]], k[[field]], info = nm)
+      } else {
+        expect_equal(k$res[[field]], k[[field]], tolerance = 0.01, info = nm)
+      }
+    }
+  }
+})

@@ -39,13 +39,13 @@ from_pilot(se_pilot = 2.13, n_pilot = 85) |>
   find_power(n_planned = 500, tau = 3)
 ```
 
-The output predicts the standard error using the pilot SE, sample size, and a conservative adjustment factor (Rule 9 from @Rainey_2026), then computes power for the assumed effect (Rule 2).
+The output predicts the standard error using the pilot SE, sample size, and a conservative adjustment factor (Pilot Rule 3, which is Rule 3 from @Rainey2024pilot), then computes power for the assumed effect (Rule 2 from @Rainey_2026).
 With 500 per condition, the study has 92% power to detect a treatment effect of 3 points.
 
 ## The conservative adjustment factor
 
 Standard errors estimated from small pilot studies are noisy.
-If the pilot SE happens to be smaller than the true SE, a naive rescaling would predict a standard error that is too small, overstating the study's power [@Albers2018; @Rainey_2026].
+If the pilot SE happens to be smaller than the true SE, a naive rescaling would predict a standard error that is too small, overstating the study's power [@Albers2018; @Rainey2024pilot].
 The conservative adjustment factor inflates the predicted SE to protect against this risk.
 Despite the conservative adjustment, the study still has 92% power for tau = 3, suggesting the planned sample size is adequate.
 

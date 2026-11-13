@@ -20,8 +20,9 @@ factorial structure.}
 An object of class \code{"power_source"}.
 }
 \description{
-Uses Rule 7 from Rainey (2026). The SE and sample size from an existing
-study are used to predict the SE of the planned study.
+Uses Pilot Rule 1: Rule 1 of the companion paper to Rainey (2026),
+"Automating Power Analysis with Pilot Data." The SE and sample size from
+an existing study are used to predict the SE of the planned study.
 }
 \examples{
 from_existing(se_existing = 1.8, n_existing = 268) |>

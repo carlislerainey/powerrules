@@ -30,7 +30,7 @@ Ahler and Sood estimate a treatment effect of 6.4 points with a 95% confidence i
 
 Suppose we plan to run this experiment on a CES module with 1,000 respondents (500 per condition).
 To predict the standard error using Rule 3 of @Rainey_2026, we need the standard deviation of the outcome in a reference population.
-The 2020 American National Elections Study (ANES) asks a similar question: respondents report their feelings toward the Democratic or Republican *party* on a 101-point feeling thermometer.
+The 2020 American National Election Study (ANES) asks a similar question: respondents report their feelings toward the Democratic or Republican *party* on a 101-point feeling thermometer.
 Ahler and Sood ask about *supporters of* the party rather than the party itself, so the measures are not identical, but the ANES provides a reasonable approximation.
 The standard deviation of the ANES feeling thermometer responses is 20.8.
 
@@ -68,7 +68,7 @@ These controls shrink the standard error, but not substantially.
 
 @Clifford2021 suggest measuring the outcome both before and after treatment and controlling for the pre-treatment measure.
 The pre-treatment measure should be *strongly* related to the post-treatment outcome.
-In a small pilot with 250 respondents, @Cutler2024 measure feelings toward supporters of the out-party before and after the treatment and find that the pre-treatment measure has an R^2^ of about 73%.
+In a pilot study, @Cutler2024 measure feelings toward supporters of the out-party before and after the treatment and find that the pre-treatment measure has an R^2^ of about 76%.
 
 If we set R^2^ = 0.40---a conservative assumption given the pilot result, though additional work should confirm this assumption---the MDE changes substantially:
 
@@ -93,6 +93,6 @@ Overestimating R^2^ produces an MDE that is too small, making the study appear m
 
 - **R^2^ = 0** (the default) assumes no control variables.
 - **R^2^ of a few percent** is typical for standard demographics (age, gender, partisanship), as in the example above.
-- **R^2^ = 0.30 to 0.50** is plausible for pre-post designs [@Clifford2021].
+- **R^2^ = 0.37 to 0.81** is the range @Clifford2021 observe across their five pre-post studies.
 
 ## References

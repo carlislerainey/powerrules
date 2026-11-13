@@ -44,7 +44,7 @@ The study requires 1,045 respondents per condition (2,090 total) for 95% power t
 ## From Broockman, Kalla, and Westwood
 
 @Broockman2022 closely replicate Ahler and Sood's result, estimating a treatment effect of 3.9 with a 90% confidence interval of [1.1, 6.6].
-They report a standard error of 1.67 with 502 per condition.
+A re-analysis of their data gives a standard error of 1.67 with 502 per condition.
 
 ```{r}
 from_existing(se_existing = 1.67, n_existing = 502) |>
@@ -53,7 +53,7 @@ from_existing(se_existing = 1.67, n_existing = 502) |>
 
 The Broockman et al. estimate implies a larger required sample: 1,684 per condition.
 The difference arises because Broockman et al. have a larger sample (502 vs. 268) but a similar SE (1.67 vs. 1.8), suggesting more variability in their data.
-Triangulating across multiple existing studies reveals how sensitive the sample size requirement is to the choice of source study [@Rainey_2026].
+Triangulating across multiple existing studies reveals how sensitive the sample size requirement is to the choice of source study [@Rainey2024pilot].
 
 ## Using a 95% confidence interval
 

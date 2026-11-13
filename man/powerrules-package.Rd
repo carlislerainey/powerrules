@@ -8,7 +8,7 @@
 \description{
 \if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
 
-Implements the rules from Rainey (2026) "Power Rules: Practical Advice for Computing Power" for balanced, between-subjects designs. Provides a pipeline interface (from_*() |> find_*()) for computing minimum detectable effects, power, and required sample sizes, with manuscript-ready output sentences.
+Implements the rules from Rainey (2026) "Power Rules: Practical Advice for Computing Statistical Power" and its companion paper "Automating Power Analysis with Pilot Data" for balanced, between-subjects designs. Provides a pipeline interface (from_*() |> find_*()) for computing minimum detectable effects, power, and required sample sizes, with manuscript-ready output sentences.
 }
 \seealso{
 Useful links:
@@ -21,6 +21,11 @@ Useful links:
 }
 \author{
 \strong{Maintainer}: Carlisle Rainey \email{crainey@fsu.edu} (\href{https://orcid.org/0000-0002-8728-4696}{ORCID})
+
+Authors:
+\itemize{
+  \item Carlisle Rainey \email{crainey@fsu.edu} (\href{https://orcid.org/0000-0002-8728-4696}{ORCID})
+}
 
 }
 \keyword{internal}

@@ -15,7 +15,9 @@ The generated code as a character string (returned invisibly).
 }
 \description{
 Prints copy-pasteable base R code that reproduces the power calculation
-using the paper's rounded constants and critical values.
+using the paper's rounded constants and critical values. Because the
+pipeline uses exact values, the generated code can give slightly different
+results (for example, a required sample size a few respondents larger).
 }
 \examples{
 from_sd(sd_y = 20.8) |> find_mde(n = 500) |> write_manual()

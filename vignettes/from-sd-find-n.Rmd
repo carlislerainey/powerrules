@@ -29,7 +29,7 @@ Ahler and Sood estimate a treatment effect of 6.4 points with a 95% confidence i
 @Broockman2022 closely replicate this result, estimating a treatment effect of 3.9 with a 90% confidence interval of [1.1, 6.6].
 
 To predict the standard error using Rule 3 of @Rainey_2026, we need the standard deviation of the outcome in a reference population.
-The 2020 American National Elections Study (ANES) asks a similar question: respondents report their feelings toward the Democratic or Republican *party* on a 101-point feeling thermometer.
+The 2020 American National Election Study (ANES) asks a similar question: respondents report their feelings toward the Democratic or Republican *party* on a 101-point feeling thermometer.
 Ahler and Sood ask about *supporters of* the party rather than the party itself, so the measures are not identical, but the ANES provides a reasonable approximation.
 The standard deviation of the ANES feeling thermometer responses is 20.8.
 
@@ -64,12 +64,13 @@ These controls help, but modestly.
 ## How to choose tau and power
 
 The `tau` argument is the treatment effect assumed for computing power.
-The lower bound of a confidence interval from a closely related study is a useful starting point [@Rainey_2026].
+By default, tau should be the smallest substantively meaningful effect [@Rainey_2026].
+The lower bound of a confidence interval from a closely related study is a simple starting point.
 In the Ahler and Sood example, the lower bound of their 95% confidence interval is 3 points.
 
 The `power` argument (default 0.80) sets the desired power level.
 Higher power requires more respondents.
-@Rainey_2026 recommends 80% power as a baseline and 95% power as a stretch goal.
+By convention, 80% power is the minimal standard for adequate power, but others recommend higher power, such as 95% [@Rainey_2026].
 Both pipelines above use 95% power; at 80% power (the default), the required sample sizes would be smaller.
 
 ## References

@@ -2,9 +2,6 @@
 
 S3method(print,power_result)
 S3method(print,power_source)
-export(build_note)
-export(build_pipeline_code)
-export(build_sentence)
 export(find_mde)
 export(find_n)
 export(find_power)
@@ -16,5 +13,7 @@ export(shiny_rules)
 export(write_DeclareDesign)
 export(write_loop)
 export(write_manual)
-importFrom(stats,pnorm)
-importFrom(stats,qnorm)
+importFrom(stats,
+  pnorm,
+  qnorm
+)

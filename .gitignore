@@ -20,8 +20,5 @@ docs/
 # Planning and reference (paper, specs, examples)
 src/
 
-# Task tracking
-todo/
-
 # Claude Code
 .claude/

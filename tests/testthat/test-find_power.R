@@ -1,64 +1,67 @@
-test_that("find_power() from SD computes correct power", {
-  # SD=20.8, n=500, tau=3, no adjustment
+# --- Power for every source type, interaction off and on ---
+
+test_that("find_power() computes SE and power for every source type", {
+  cv <- qnorm(0.95)
+  cf_pilot     <- sqrt(1 / 50) + 1
+  cf_pilot_int <- sqrt(1 / (2 * 75)) + 1
+  se_existing  <- sqrt(268 / 500) * 1.8
+
+  cases <- list(
+    sd = list(
+      source = from_sd(sd_y = 20.8), n = 500, tau = 3,
+      se = 2 * 20.8 / sqrt(2 * 500)),
+    sd_r2 = list(
+      source = from_sd(sd_y = 20.8, r_squared = 0.05), n = 500, tau = 3,
+      se = 2 * 20.8 * sqrt(1 - 0.05) / sqrt(2 * 500)),
+    sd_interaction = list(
+      source = from_sd(sd_y = 2.0, interaction = TRUE), n = 223, tau = 0.67,
+      se = 2 * 2.0 / sqrt(223)),
+    sd_r2_interaction = list(
+      source = from_sd(sd_y = 2.0, r_squared = 0.05, interaction = TRUE),
+      n = 223, tau = 0.67, se = 2 * 2.0 * sqrt(1 - 0.05) / sqrt(223)),
+    existing = list(
+      source = from_existing(se_existing = 1.8, n_existing = 268),
+      n = 500, tau = 3, se = se_existing),
+    existing_interaction = list(
+      source = from_existing(se_existing = 1.8, n_existing = 268,
+                             interaction = TRUE),
+      n = 500, tau = 3, se = se_existing),
+    pilot = list(
+      source = from_pilot(se_pilot = 2.0, n_pilot = 50),
+      n = 500, tau = 3, se = sqrt(50 / 500) * cf_pilot * 2.0),
+    pilot_interaction = list(
+      source = from_pilot(se_pilot = 0.40, n_pilot = 75, interaction = TRUE),
+      n = 375, tau = 0.67, se = sqrt(75 / 375) * cf_pilot_int * 0.40)
+  )
+
+  for (nm in names(cases)) {
+    k <- cases[[nm]]
+    res <- find_power(k$source, n_planned = k$n, tau = k$tau)
+    expect_equal(res$se, k$se, tolerance = 0.001, info = nm)
+    expect_equal(res$power, 1 - pnorm(cv - k$tau / k$se),
+                 tolerance = 0.001, info = nm)
+  }
+})
+
+# --- Returned object ---
+
+test_that("find_power() returns a power_result with the expected fields", {
+  s <- from_sd(sd_y = 20.8)
+  res <- find_power(s, n_planned = 500, tau = 3)
   se <- 2 * 20.8 / sqrt(2 * 500)
-  cv <- qnorm(0.95)
-  expected_power <- 1 - pnorm(cv - 3 / se)
-  res <- from_sd(sd_y = 20.8) |> find_power(n_planned = 500, tau = 3)
-  expect_equal(res$power, expected_power, tolerance = 0.001)
+  expect_s3_class(res, "power_result")
+  expect_equal(res$goal, "power")
+  expect_identical(res$source, s)
+  expect_equal(res$ci, 0.90)
+  expect_equal(res$n_planned, 500)
+  expect_equal(res$tau, 3)
+  expect_equal(res$se, se, tolerance = 0.001)
+  expect_equal(res$ratio, 3 / se, tolerance = 0.001)
+  expect_equal(res$critical_value, qnorm(0.95), tolerance = 0.001)
+  expect_true(res$power > 0 && res$power < 1)
 })
 
-test_that("find_power() from SD with adjustment computes correct power", {
-  # SD=20.8, n=500, tau=3, R^2=0.05
-  se <- 2 * 20.8 * sqrt(1 - 0.05) / sqrt(2 * 500)
-  cv <- qnorm(0.95)
-  expected_power <- 1 - pnorm(cv - 3 / se)
-  res <- from_sd(sd_y = 20.8, r_squared = 0.05) |>
-    find_power(n_planned = 500, tau = 3)
-  expect_equal(res$power, expected_power, tolerance = 0.001)
-})
-
-test_that("find_power() from existing study computes correct power", {
-  # se=1.8, n_existing=268, n_planned=500, tau=3
-  se <- sqrt(268 / 500) * 1.8
-  cv <- qnorm(0.95)
-  expected_power <- 1 - pnorm(cv - 3 / se)
-  res <- from_existing(se_existing = 1.8, n_existing = 268) |>
-    find_power(n_planned = 500, tau = 3)
-  expect_equal(res$power, expected_power, tolerance = 0.001)
-})
-
-test_that("find_power() from pilot computes correct power (conservative)", {
-  # se=2.0, n_pilot=50, n_planned=500, tau=3
-  cf <- sqrt(1 / 50) + 1
-  se <- sqrt(50 / 500) * cf * 2.0
-  cv <- qnorm(0.95)
-  expected_power <- 1 - pnorm(cv - 3 / se)
-  res <- from_pilot(se_pilot = 2.0, n_pilot = 50) |>
-    find_power(n_planned = 500, tau = 3)
-  expect_equal(res$power, expected_power, tolerance = 0.001)
-})
-
-test_that("find_power() from SD (interaction) computes correct power", {
-  # SD=2.0, n=223, tau=0.67
-  se <- 2 * 2.0 / sqrt(223)  # interaction: sqrt(n) not sqrt(2n)
-  cv <- qnorm(0.95)
-  expected_power <- 1 - pnorm(cv - 0.67 / se)
-  res <- from_sd(sd_y = 2.0, interaction = TRUE) |>
-    find_power(n_planned = 223, tau = 0.67)
-  expect_equal(res$power, expected_power, tolerance = 0.001)
-})
-
-test_that("find_power() from pilot (interaction) computes correct power", {
-  # se_pilot=0.40, n_pilot=75, n_planned=375, tau=0.67
-  # Interaction: cf_denom = 2*75, so cf = sqrt(1/150) + 1
-  cf <- sqrt(1 / (2 * 75)) + 1
-  se <- sqrt(75 / 375) * cf * 0.40
-  cv <- qnorm(0.95)
-  expected_power <- 1 - pnorm(cv - 0.67 / se)
-  res <- from_pilot(se_pilot = 0.40, n_pilot = 75, interaction = TRUE) |>
-    find_power(n_planned = 375, tau = 0.67)
-  expect_equal(res$power, expected_power, tolerance = 0.001)
-})
+# --- 95% CI ---
 
 test_that("find_power() with 95% CI uses correct critical value", {
   se <- 2 * 20.8 / sqrt(2 * 500)
@@ -66,9 +69,12 @@ test_that("find_power() with 95% CI uses correct critical value", {
   expected_power <- 1 - pnorm(cv - 3 / se)
   res <- from_sd(sd_y = 20.8) |>
     find_power(n_planned = 500, tau = 3, ci = 0.95)
+  expect_equal(res$ci, 0.95)
   expect_equal(res$power, expected_power, tolerance = 0.001)
   expect_equal(res$critical_value, qnorm(0.975), tolerance = 0.001)
 })
+
+# --- Known power levels ---
 
 test_that("find_power() returns ~80% when tau = MDE_80", {
   se <- 2 * 20.8 / sqrt(2 * 500)
@@ -87,20 +93,18 @@ test_that("find_power() returns ~50% when tau = cv * SE", {
   expect_equal(res$power, 0.50, tolerance = 0.01)
 })
 
-test_that("find_power() returns a power_result object invisibly", {
-  res <- from_sd(sd_y = 20.8) |> find_power(n_planned = 500, tau = 3)
-  expect_s3_class(res, "power_result")
-  expect_equal(res$goal, "power")
+test_that("find_power() is directional (one-sided), not two-sided", {
+  # SE = 2 * 50 / sqrt(2 * 200) = 5, so tau / SE = 0.1
+  res <- from_sd(sd_y = 50) |> find_power(n = 200, tau = 0.5)
+  expect_equal(res$se, 5)
+  expect_equal(res$ratio, 0.1)
+  expect_equal(res$power, 1 - pnorm(qnorm(0.95) - 0.1))
+  expect_equal(res$power, 0.0612, tolerance = 1e-3)
+  # A two-sided test would give about 0.10 here
+  expect_lt(res$power, 0.10)
 })
 
-test_that("find_power() works with the pipe operator", {
-  res <- from_existing(se_existing = 1.8, n_existing = 268) |>
-    find_power(n_planned = 500, tau = 3)
-  expect_s3_class(res, "power_result")
-  expect_true(res$power > 0 && res$power < 1)
-})
-
-# --- n alias tests ---
+# --- n alias ---
 
 test_that("find_power() accepts n as alias for n_planned", {
   res_n <- from_sd(sd_y = 20.8) |> find_power(n = 500, tau = 3)

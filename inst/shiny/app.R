@@ -19,6 +19,20 @@ inline_select <- function(inputId, choices, selected = NULL) {
   )
 }
 
+# One row of the inputs table: name | value | description. `name` is the
+# label text, or a tag to use in its place; `...` follows the input box.
+input_row <- function(name, inputId, desc, ..., width = "120px") {
+  div(class = "input-row",
+    if (is.character(name)) span(class = "input-name", name) else name,
+    div(class = "input-value",
+      numericInput(inputId, label = NULL, value = NA, step = NA,
+                   width = width),
+      ...
+    ),
+    span(class = "input-desc", desc)
+  )
+}
+
 # --- UI ---------------------------------------------------------------------
 
 ui <- fluidPage(
@@ -106,99 +120,48 @@ ui <- fluidPage(
 
         # from_sd
         conditionalPanel("input.source_type == 'sd'",
-          div(class = "input-row",
-            span(class = "input-name", "SD(Y) ="),
-            div(class = "input-value",
-              numericInput("sd_y", label = NULL, value = NA,
-                           step = NA, width = "120px")
-            ),
-            span(class = "input-desc",
-              "SD of the outcome in a population like yours, e.g., from a census or prior study")
-          ),
-          div(class = "input-row",
-            span(class = "input-name", "R\u00b2 ="),
-            div(class = "input-value",
-              numericInput("r_squared", label = NULL, value = NA,
-                           step = NA, width = "80px")
-            ),
-            span(class = "input-desc",
-              "proportion of variance explained by covariates; leave blank for no adjustment")
-          )
+          input_row("SD(Y) =", "sd_y",
+            "SD of the outcome in a population like yours, e.g., from a census or prior study"),
+          input_row("R\u00b2 =", "r_squared",
+            "proportion of variance explained by covariates; leave blank for no adjustment",
+            width = "80px")
         ),
 
         # from_existing
         conditionalPanel("input.source_type == 'existing'",
-          div(class = "input-row",
-            span(class = "input-name", "SE (existing) ="),
-            div(class = "input-value",
-              numericInput("se_existing", label = NULL, value = NA,
-                           step = NA, width = "120px")
-            ),
-            span(class = "input-desc",
-              "standard error of the treatment effect from that study")
-          ),
-          div(class = "input-row",
-            span(class = "input-name", "n (existing) ="),
-            div(class = "input-value",
-              numericInput("n_existing", label = NULL, value = NA,
-                           step = NA, width = "120px")
-            ),
-            span(class = "input-desc",
-              "number of respondents per condition in that study")
-          )
+          input_row("SE (existing) =", "se_existing",
+            "standard error of the treatment effect from that study"),
+          input_row("n (existing) =", "n_existing",
+            "number of respondents per condition in that study")
         ),
 
         # from_pilot
         conditionalPanel("input.source_type == 'pilot'",
-          div(class = "input-row",
-            span(class = "input-name", "SE (pilot) ="),
-            div(class = "input-value",
-              numericInput("se_pilot", label = NULL, value = NA,
-                           step = NA, width = "120px")
-            ),
-            span(class = "input-desc",
-              "standard error of the treatment effect from that study")
-          ),
-          div(class = "input-row",
-            span(class = "input-name", "n (pilot) ="),
-            div(class = "input-value",
-              numericInput("n_pilot", label = NULL, value = NA,
-                           step = NA, width = "120px")
-            ),
-            span(class = "input-desc",
-              "number of respondents per condition in that study")
-          )
+          input_row("SE (pilot) =", "se_pilot",
+            "standard error of the treatment effect from that study"),
+          input_row("n (pilot) =", "n_pilot",
+            "number of respondents per condition in that study")
         ),
 
         # n_planned (for find_mde and find_power)
         conditionalPanel(
           "input.goal_type == 'mde' || input.goal_type == 'power'",
-          div(class = "input-row",
-            uiOutput("n_label", container = span, class = "input-name"),
-            div(class = "input-value",
-              numericInput("n_planned", label = NULL, value = NA,
-                           step = NA, width = "120px"),
-              uiOutput("total_annotation", inline = TRUE)
-            ),
-            span(class = "input-desc",
-              "number of respondents per condition in the planned study")
-          )
+          input_row(uiOutput("n_label", container = span, class = "input-name"),
+            "n_planned",
+            "number of respondents per condition in the planned study",
+            uiOutput("total_annotation", inline = TRUE))
         ),
 
         # tau (for find_power and find_n)
         conditionalPanel(
           "input.goal_type == 'power' || input.goal_type == 'n'",
-          div(class = "input-row",
-            span(class = "input-name", "tau ="),
-            div(class = "input-value",
-              numericInput("tau", label = NULL, value = NA,
-                           step = NA, width = "120px")
-            ),
-            span(class = "input-desc",
-              "the smallest treatment effect you'd consider meaningful, in units of the outcome")
-          )
+          input_row("tau =", "tau",
+            "the smallest treatment effect you'd consider meaningful, in units of the outcome")
         )
       ),
+
+      # --- Input problem (shown instead of a silently wrong or blank result) ---
+      uiOutput("problem_box"),
 
       tags$hr(class = "section-rule"),
 
@@ -230,18 +193,20 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
 
+  ci <- 0.90  # the board always uses 90% confidence intervals
+
   # --- Derived reactives ---
 
   interaction <- reactive(input$design_type == "interaction")
 
-  ci <- reactive(0.90)
-
+  # R-squared counts only when it is a usable proportion; blank means none
   use_r2 <- reactive({
     val <- input$r_squared
     input$source_type == "sd" &&
       !is.null(val) && !is.na(val) && is.numeric(val) && val > 0 && val < 1
   })
 
+  # NULL while a custom power level is blank or out of range
   power_val <- reactive({
     if (input$goal_type != "n") return(0.80)
     if (input$power_choice == "custom") {
@@ -252,25 +217,48 @@ server <- function(input, output, session) {
     as.numeric(input$power_choice)
   })
 
-  # --- Collect validated inputs ---
+  # --- Input problems the board explains rather than ignoring ---
+  # An out-of-range value (e.g., R-squared typed as 5 for 5%) must not be
+  # silently dropped, so it blocks the result and shows a message instead.
+
+  input_problem <- reactive({
+    st <- input$source_type
+    gt <- input$goal_type
+
+    r2 <- input$r_squared
+    if (st == "sd" && is.numeric(r2) && !is.na(r2) && (r2 < 0 || r2 >= 1))
+      return(paste0("R\u00b2 must be a proportion between 0 and 1 ",
+                    "(for example, 0.05 for 5%)."))
+
+    if (gt == "n" && input$power_choice == "custom") {
+      cp <- input$custom_power
+      test_size <- (1 - ci) / 2
+      if (is.numeric(cp) && !is.na(cp) &&
+          (cp <= test_size + 1e-8 || cp >= 1))
+        return(paste0("Power must be a proportion between ",
+                      fmt_val(test_size),
+                      " and 1 (for example, 0.85 for 85%)."))
+    }
+
+    if (gt %in% c("mde", "power")) {
+      n <- input$n_planned
+      if (is.numeric(n) && !is.na(n) && n > 0 && abs(n - round(n)) > 1e-8)
+        return("The sample size per condition must be a whole number.")
+    }
+
+    NULL
+  })
+
+  # --- Collect inputs (NULL for a blank or non-positive value) ---
 
   vp <- function(x) {
     if (is.null(x) || is.na(x) || !is.numeric(x) || x <= 0) NULL else x
   }
 
   collect_inputs <- reactive({
-    r2 <- NULL
-    if (use_r2()) {
-      val <- input$r_squared
-      if (!is.null(val) && !is.na(val) && is.numeric(val) &&
-          val >= 0 && val < 1) {
-        r2 <- val
-      }
-    }
-
     list(
       sd_y        = vp(input$sd_y),
-      r_squared   = r2,
+      r_squared   = if (use_r2()) input$r_squared,
       se_existing = vp(input$se_existing),
       n_existing  = vp(input$n_existing),
       se_pilot    = vp(input$se_pilot),
@@ -283,88 +271,47 @@ server <- function(input, output, session) {
   # --- Check if all required inputs are present ---
 
   inputs_complete <- reactive({
-    inp <- collect_inputs()
-    st  <- input$source_type
-    gt  <- input$goal_type
+    if (!is.null(input_problem())) return(FALSE)
 
-    # Source inputs
-    src_ok <- switch(st,
-      sd = {
-        ok <- !is.null(inp$sd_y)
-        if (use_r2()) ok <- ok && !is.null(inp$r_squared)
-        ok
-      },
+    inp <- collect_inputs()
+    src_ok <- switch(input$source_type,
+      sd       = !is.null(inp$sd_y),
       existing = !is.null(inp$se_existing) && !is.null(inp$n_existing),
       pilot    = !is.null(inp$se_pilot) && !is.null(inp$n_pilot)
     )
-    if (!src_ok) return(FALSE)
-
-    # Goal inputs
-    goal_ok <- switch(gt,
+    goal_ok <- switch(input$goal_type,
       mde   = !is.null(inp$n_planned),
       power = !is.null(inp$n_planned) && !is.null(inp$tau),
       n     = !is.null(inp$tau) && !is.null(power_val())
     )
-
-    goal_ok
+    src_ok && goal_ok
   })
 
-  # --- Build source object ---
-
-  source_obj <- reactive({
-    req(inputs_complete())
-    inp <- collect_inputs()
-    st  <- input$source_type
-    int <- interaction()
-
-    tryCatch(
-      switch(st,
-        sd = {
-          r2 <- if (!is.null(inp$r_squared)) inp$r_squared else 0
-          from_sd(sd_y = inp$sd_y, r_squared = r2, interaction = int)
-        },
-        existing = from_existing(se_existing = inp$se_existing,
-                                  n_existing = inp$n_existing,
-                                  interaction = int),
-        pilot    = from_pilot(se_pilot = inp$se_pilot,
-                               n_pilot = inp$n_pilot,
-                               interaction = int)
-      ),
-      error = function(e) NULL
-    )
-  })
-
-  # --- Compute result ---
+  # --- Compute the result (NULL until the inputs are complete) ---
 
   result <- reactive({
-    src <- source_obj()
-    req(src)
+    if (!inputs_complete()) return(NULL)
     inp <- collect_inputs()
-    gt  <- input$goal_type
+    int <- interaction()
 
     tryCatch({
-      switch(gt,
-        mde = {
-          capture.output(
-            res <- find_mde(src, n_planned = inp$n_planned, ci = ci())
-          )
-          res
-        },
-        power = {
-          capture.output(
-            res <- find_power(src, n_planned = inp$n_planned,
-                               tau = inp$tau, ci = ci())
-          )
-          res
-        },
-        n = {
-          pv <- power_val()
-          req(pv)
-          capture.output(
-            res <- find_n(src, tau = inp$tau, power = pv, ci = ci())
-          )
-          res
-        }
+      src <- switch(input$source_type,
+        sd = from_sd(sd_y = inp$sd_y,
+                     r_squared = if (is.null(inp$r_squared)) 0 else inp$r_squared,
+                     interaction = int),
+        existing = from_existing(se_existing = inp$se_existing,
+                                 n_existing = inp$n_existing,
+                                 interaction = int),
+        pilot = from_pilot(se_pilot = inp$se_pilot, n_pilot = inp$n_pilot,
+                           interaction = int)
+      )
+      switch(input$goal_type,
+        mde = find_mde(src, n_planned = inp$n_planned, ci = ci,
+                       quiet = TRUE),
+        power = find_power(src, n_planned = inp$n_planned, tau = inp$tau,
+                           ci = ci, quiet = TRUE),
+        n = find_n(src, tau = inp$tau, power = power_val(), ci = ci,
+                   quiet = TRUE)
       )
     }, error = function(e) NULL)
   })
@@ -373,8 +320,7 @@ server <- function(input, output, session) {
 
   # n input label: "n =" for SD source, "n (planned) =" for existing/pilot
   output$n_label <- renderUI({
-    label <- if (input$source_type == "sd") "n =" else "n (planned) ="
-    label
+    if (input$source_type == "sd") "n =" else "n (planned) ="
   })
 
   # Total annotation
@@ -384,64 +330,53 @@ server <- function(input, output, session) {
       n_cond <- if (interaction()) 4 else 2
       total <- n_cond * val
       tags$span(class = "total-annotation",
-                paste0("(", format(total, big.mark = ","),
+                paste0("(", format(total, big.mark = ",",
+                                   scientific = FALSE),
                        " total)"))
     }
   })
 
-  # Computation section
+  # Input problem message
+  output$problem_box <- renderUI({
+    msg <- input_problem()
+    if (!is.null(msg)) div(class = "problem-box", msg)
+  })
+
+  # Computation section: formulas show blanks until their values arrive
   output$computation <- renderUI({
-    st  <- input$source_type
-    gt  <- input$goal_type
-    int <- interaction()
-    inp <- collect_inputs()
-    res <- tryCatch(result(), error = function(e) NULL)
-    pv  <- power_val()
+    pv <- power_val()
     if (is.null(pv)) pv <- 0.80
 
-    html <- render_computation(st, gt, int, ci(), pv, inp, use_r2(), res)
-    HTML(html)
+    HTML(render_computation(input$source_type, input$goal_type,
+                            interaction(), ci, pv, collect_inputs(),
+                            use_r2(), result()))
   })
 
-  # Result highlight
+  # Everything below appears only once there is a result
+
   output$result_highlight <- renderUI({
-    res <- tryCatch(result(), error = function(e) NULL)
-    if (is.null(res)) return(NULL)
-
-    html <- render_result_highlight(res, input$goal_type, interaction())
-    HTML(html)
+    res <- result()
+    if (!is.null(res))
+      HTML(render_result_highlight(res, input$goal_type, interaction()))
   })
 
-  # Manuscript sentence
   output$sentence_box <- renderUI({
-    res <- tryCatch(result(), error = function(e) NULL)
-    if (is.null(res)) return(NULL)
-
-    html <- render_sentence(res, interaction())
-    HTML(html)
+    res <- result()
+    if (!is.null(res)) HTML(render_sentence(res))
   })
 
-  # MDE factor note
   output$note_box <- renderUI({
-    res <- tryCatch(result(), error = function(e) NULL)
+    res <- result()
     if (is.null(res)) return(NULL)
-
     html <- render_note(res)
-    if (nzchar(html)) HTML(html) else NULL
+    if (nzchar(html)) HTML(html)
   })
 
-  # Pipeline
   output$pipeline_box <- renderUI({
-    res <- tryCatch(result(), error = function(e) NULL)
-    if (is.null(res)) return(NULL)
-
-    inp <- collect_inputs()
-    pv  <- power_val()
-    if (is.null(pv)) pv <- 0.80
-
-    html <- render_pipeline(input$source_type, input$goal_type,
-                            interaction(), ci(), pv, inp)
-    HTML(html)
+    res <- result()
+    if (!is.null(res))
+      HTML(render_pipeline(input$source_type, input$goal_type, interaction(),
+                           ci, power_val(), collect_inputs()))
   })
 }
 

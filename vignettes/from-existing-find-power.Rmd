@@ -39,13 +39,13 @@ from_existing(se_existing = 1.8, n_existing = 268) |>
   find_power(n_planned = 500, tau = 3)
 ```
 
-The output scales the existing SE to the planned sample size (Rule 7), then computes power for the assumed effect (Rule 2).
+The output scales the existing SE to the planned sample size (Pilot Rule 1, which is Rule 1 from @Rainey2024pilot), then computes power for the assumed effect (Rule 2 from @Rainey_2026).
 With 500 per condition, the study has 74% power to detect a treatment effect of 3 points.
 This falls below the conventional 80% threshold.
 
 ## What makes an existing study "close enough"?
 
-The existing study and planned study should share the same design (balanced, between-subjects), a similar population, and the same or a similar outcome measure [@Rainey_2026].
+The existing study and planned study should share the same design (balanced, between-subjects), a similar population, and the same or a similar outcome measure [@Rainey2024pilot].
 The existing study can differ in sample size and treatment---the rule adjusts for sample size and the researcher supplies the assumed effect separately.
 
 ## Interaction designs

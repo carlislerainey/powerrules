@@ -24,8 +24,10 @@ ask_menu <- function(prompt, choices) {
   }
 }
 
-# Ask for a numeric value and return it
-ask_number <- function(prompt, hint = NULL) {
+# Ask for a number until `valid()` accepts it; `retry` is the reminder shown
+# after an answer it rejects
+ask_number <- function(prompt, hint = NULL, valid = function(val) val > 0,
+                       retry = "Please enter a positive number.") {
   cat("\n")
   cat(prompt, "\n")
   if (!is.null(hint)) cat("  (", hint, ")\n", sep = "")
@@ -34,39 +36,21 @@ ask_number <- function(prompt, hint = NULL) {
   repeat {
     answer <- trimws(readline("Value: "))
     val <- suppressWarnings(as.numeric(answer))
-    if (!is.na(val) && val > 0) return(val)
-    cat("  Please enter a positive number.\n")
+    if (!is.na(val) && valid(val)) return(val)
+    cat("  ", retry, "\n", sep = "")
   }
 }
 
 # Ask for an R-squared value in [0, 1)
 ask_r_squared <- function(prompt, hint = NULL) {
-  cat("\n")
-  cat(prompt, "\n")
-  if (!is.null(hint)) cat("  (", hint, ")\n", sep = "")
-  cat("\n")
-
-  repeat {
-    answer <- trimws(readline("Value: "))
-    val <- suppressWarnings(as.numeric(answer))
-    if (!is.na(val) && val >= 0 && val < 1) return(val)
-    cat("  Please enter a number between 0 and 1 (exclusive).\n")
-  }
+  ask_number(prompt, hint, valid = function(val) val >= 0 && val < 1,
+             retry = "Please enter a number between 0 and 1 (exclusive).")
 }
 
 # Ask for a power level (strictly between 0 and 1)
 ask_power <- function(prompt, hint = NULL) {
-  cat("\n")
-  cat(prompt, "\n")
-  if (!is.null(hint)) cat("  (", hint, ")\n", sep = "")
-  cat("\n")
-
-  repeat {
-    answer <- trimws(readline("Value: "))
-    val <- suppressWarnings(as.numeric(answer))
-    if (!is.na(val) && val > 0 && val < 1) return(val)
-    cat("  Please enter a number between 0 and 1 (exclusive).\n")
-  }
+  ask_number(prompt, hint, valid = function(val) val > 0 && val < 1,
+             retry = "Please enter a number between 0 and 1 (exclusive).")
 }
 
 # Print a section divider

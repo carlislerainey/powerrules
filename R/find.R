@@ -29,7 +29,7 @@ compute_se <- function(source, n_planned) {
   )
 }
 
-# Conservative adjustment factor for pilot data (Rule 9)
+# Conservative adjustment factor for pilot data (Pilot Rule 3)
 get_conservative_factor <- function(source) {
   if (source$type != "pilot") return(NULL)
   cf_denom <- if (source$interaction) 2 * source$n_pilot else source$n_pilot
@@ -45,25 +45,30 @@ get_conservative_factor <- function(source) {
 #'
 #' @param source A `"power_source"` object from `from_sd()`,
 #'   `from_existing()`, or `from_pilot()`.
-#' @param n_planned Respondents per condition in the planned study. Use
-#'   `n_planned` when the source is `from_existing()` or `from_pilot()`;
-#'   use `n` when the source is `from_sd()`.
+#' @param n_planned Respondents per condition in the planned study (a whole
+#'   number). Use `n_planned` when the source is `from_existing()` or
+#'   `from_pilot()`; use `n` when the source is `from_sd()`.
 #' @param ci Confidence interval level: 0.90 (default) or 0.95.
 #' @param n Alias for `n_planned`. Specify one or the other, not both.
+#' @param quiet If `TRUE`, compute the result without printing it. Defaults
+#'   to `getOption("powerrules.quiet", FALSE)`, so
+#'   `options(powerrules.quiet = TRUE)` silences every goal function.
+#'   `print()` the returned object to see the output later.
 #' @return A `"power_result"` object (returned invisibly).
 #' @export
 #' @examples
 #' from_sd(sd_y = 20.8) |> find_mde(n = 500)
-find_mde <- function(source, n_planned = NULL, ci = 0.90, n = NULL) {
-  if (!inherits(source, "power_source"))
-    stop("`source` must be a power_source object ",
-         "(use from_sd(), from_existing(), or from_pilot())")
+#'
+#' # Compute without printing, then print later
+#' result <- from_sd(sd_y = 20.8) |> find_mde(n = 500, quiet = TRUE)
+#' result$mde_80
+find_mde <- function(source, n_planned = NULL, ci = 0.90, n = NULL,
+                     quiet = getOption("powerrules.quiet", FALSE)) {
+  check_source(source)
   n_planned <- resolve_n(n_planned, n)
-  if (!is.numeric(n_planned) || length(n_planned) != 1 ||
-      is.na(n_planned) || n_planned <= 0)
-    stop("`n_planned` must be a positive number")
-  if (!(ci %in% c(0.90, 0.95)))
-    stop("`ci` must be 0.90 or 0.95")
+  check_n_planned(n_planned)
+  check_ci(ci)
+  check_flag(quiet, "quiet")
 
   se <- compute_se(source, n_planned)
   mf80 <- mde_factor(0.80, ci)
@@ -85,7 +90,7 @@ find_mde <- function(source, n_planned = NULL, ci = 0.90, n = NULL) {
     conservative_factor = cf
   ), class = "power_result")
 
-  print(result)
+  if (!quiet) print(result)
   invisible(result)
 }
 
@@ -94,32 +99,20 @@ find_mde <- function(source, n_planned = NULL, ci = 0.90, n = NULL) {
 #' Given a power source, planned sample size, and assumed treatment effect,
 #' computes the power (Rule 2 from Rainey, 2026).
 #'
-#' @param source A `"power_source"` object.
-#' @param n_planned Respondents per condition in the planned study. Use
-#'   `n_planned` when the source is `from_existing()` or `from_pilot()`;
-#'   use `n` when the source is `from_sd()`.
 #' @param tau The assumed treatment effect (positive).
-#' @param ci Confidence interval level: 0.90 (default) or 0.95.
-#' @param n Alias for `n_planned`. Specify one or the other, not both.
+#' @inheritParams find_mde
 #' @return A `"power_result"` object (returned invisibly).
 #' @export
 #' @examples
 #' from_sd(sd_y = 20.8) |> find_power(n = 500, tau = 3)
-find_power <- function(source, n_planned = NULL, tau, ci = 0.90, n = NULL) {
-  if (!inherits(source, "power_source"))
-    stop("`source` must be a power_source object ",
-         "(use from_sd(), from_existing(), or from_pilot())")
+find_power <- function(source, n_planned = NULL, tau, ci = 0.90, n = NULL,
+                       quiet = getOption("powerrules.quiet", FALSE)) {
+  check_source(source)
   n_planned <- resolve_n(n_planned, n)
-  if (!is.numeric(n_planned) || length(n_planned) != 1 ||
-      is.na(n_planned) || n_planned <= 0)
-    stop("`n_planned` must be a positive number")
-  if (!is.numeric(tau) || length(tau) != 1 || is.na(tau))
-    stop("`tau` must be a number")
-  if (tau <= 0)
-    stop("`tau` must be positive (use a positive value; ",
-         "the sign indicates the direction of the hypothesis)")
-  if (!(ci %in% c(0.90, 0.95)))
-    stop("`ci` must be 0.90 or 0.95")
+  check_n_planned(n_planned)
+  check_tau(tau)
+  check_ci(ci)
+  check_flag(quiet, "quiet")
 
   se <- compute_se(source, n_planned)
   cv <- qnorm(1 - (1 - ci) / 2)
@@ -140,38 +133,39 @@ find_power <- function(source, n_planned = NULL, tau, ci = 0.90, n = NULL) {
     conservative_factor = cf
   ), class = "power_result")
 
-  print(result)
+  if (!quiet) print(result)
   invisible(result)
 }
 
 #' Find the required sample size
 #'
 #' Given a power source, assumed treatment effect, and desired power level,
-#' computes the required sample size per condition (Rules 6/8/10 from
-#' Rainey, 2026).
+#' computes the required sample size per condition. Uses Rule 6 from Rainey
+#' (2026) with `from_sd()`, and Pilot Rules 2 and 4 (Rules 2 and 4 of the
+#' companion paper, "Automating Power Analysis with Pilot Data") with
+#' `from_existing()` and `from_pilot()`.
 #'
-#' @param source A `"power_source"` object.
 #' @param tau The assumed treatment effect (positive).
-#' @param power Desired power level (default 0.80).
-#' @param ci Confidence interval level: 0.90 (default) or 0.95.
+#' @param power Desired power level (default 0.80). Must be greater than the
+#'   size of the test (0.05 for a 90 percent confidence interval, 0.025 for
+#'   a 95 percent confidence interval).
+#' @inheritParams find_mde
 #' @return A `"power_result"` object (returned invisibly).
 #' @export
 #' @examples
 #' from_sd(sd_y = 20.8) |> find_n(tau = 3)
-find_n <- function(source, tau, power = 0.80, ci = 0.90) {
-  if (!inherits(source, "power_source"))
-    stop("`source` must be a power_source object ",
-         "(use from_sd(), from_existing(), or from_pilot())")
-  if (!is.numeric(tau) || length(tau) != 1 || is.na(tau))
-    stop("`tau` must be a number")
-  if (tau <= 0)
-    stop("`tau` must be positive (use a positive value; ",
-         "the sign indicates the direction of the hypothesis)")
+find_n <- function(source, tau, power = 0.80, ci = 0.90,
+                   quiet = getOption("powerrules.quiet", FALSE)) {
+  check_source(source)
+  check_tau(tau)
   if (!is.numeric(power) || length(power) != 1 ||
       is.na(power) || power <= 0 || power >= 1)
     stop("`power` must be between 0 and 1 (exclusive)")
-  if (!(ci %in% c(0.90, 0.95)))
-    stop("`ci` must be 0.90 or 0.95")
+  check_ci(ci)
+  check_flag(quiet, "quiet")
+  if (power <= test_size(ci) + 1e-8)
+    stop("`power` must be greater than the size of the test (",
+         fmt_val(test_size(ci)), ")")
 
   mf <- mde_factor(power, ci)
   interaction <- source$interaction
@@ -207,6 +201,6 @@ find_n <- function(source, tau, power = 0.80, ci = 0.90) {
     conservative_factor = cf
   ), class = "power_result")
 
-  print(result)
+  if (!quiet) print(result)
   invisible(result)
 }

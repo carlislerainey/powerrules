@@ -29,15 +29,11 @@ print.power_source <- function(x, ...) {
 #' @export
 print.power_result <- function(x, ...) {
   source <- x$source
-  interaction <- source$interaction
-  n_cond <- if (interaction) 4 else 2
-  effect_label <- if (interaction) "interaction" else "treatment effect"
-  effect_article <- if (interaction) "an interaction" else "a treatment effect"
 
   # --- Header block ---
   cat(rule_line("Power Analysis"), "\n")
 
-  design_str <- if (interaction) "balanced, 2x2 factorial (interaction)"
+  design_str <- if (source$interaction) "balanced, 2x2 factorial (interaction)"
                 else "balanced, between-subjects"
   cat("  Design:     ", design_str, "\n", sep = "")
 
@@ -47,27 +43,25 @@ print.power_result <- function(x, ...) {
     pilot = "pilot data (conservative)")
   cat("  Source:     ", source_str, "\n", sep = "")
 
-  test_size <- if (x$ci == 0.90) "0.05" else "0.025"
-  cat("  CI level:   ", fmt_pct(x$ci), " (size-", test_size,
+  cat("  CI level:   ", fmt_pct(x$ci), " (size-", fmt_val(test_size(x$ci)),
       " test of directional hypothesis)\n", sep = "")
 
   cat("\n")
 
   # --- Inputs ---
   cat("  Inputs:\n")
-  print_inputs(x, effect_label, n_cond)
+  print_inputs(x)
 
   cat("\n")
 
   # --- Computation ---
-  print_computation(x, effect_label, n_cond)
+  print_computation(x)
 
   cat("\n")
 
   # --- Manuscript sentence ---
   cat(rule_line("Manuscript sentence (edit as needed)"), "\n")
-  sentence <- build_sentence(x, effect_label, effect_article, n_cond)
-  cat(wrap_sentence(sentence), "\n")
+  cat(wrap_sentence(build_sentence(x)), "\n")
 
   # --- Note about MDE factors ---
   note <- build_note(x)
@@ -81,7 +75,7 @@ print.power_result <- function(x, ...) {
 
 # --- Inputs section ----------------------------------------------------------
 
-print_inputs <- function(x, effect_label, n_cond) {
+print_inputs <- function(x) {
   source <- x$source
 
   if (source$type == "sd") {
@@ -97,7 +91,7 @@ print_inputs <- function(x, effect_label, n_cond) {
   }
 
   if (x$goal %in% c("mde", "power")) {
-    total <- n_cond * x$n_planned
+    total <- n_conditions(source) * x$n_planned
     n_label <- if (source$type %in% c("existing", "pilot")) "n (planned)   ="
                else "n     ="
     cat(paste0("    ", n_label, " ", fmt_val(x$n_planned),
@@ -105,7 +99,7 @@ print_inputs <- function(x, effect_label, n_cond) {
   }
 
   if (x$goal %in% c("power", "n")) {
-    suffix <- if (source$interaction) paste0(" (", effect_label, ")") else ""
+    suffix <- if (source$interaction) " (interaction)" else ""
     cat(paste0("    tau   = ", fmt_val(x$tau), suffix, "\n"))
   }
 
@@ -116,7 +110,7 @@ print_inputs <- function(x, effect_label, n_cond) {
 
 # --- Computation section -----------------------------------------------------
 
-print_computation <- function(x, effect_label, n_cond) {
+print_computation <- function(x) {
   source <- x$source
 
   if (x$goal %in% c("mde", "power")) {
@@ -137,7 +131,7 @@ print_computation <- function(x, effect_label, n_cond) {
       cat("  tau / SE     = ", fmt_val(x$tau), " / ", fmt(x$se),
           " = ", fmt(x$ratio), "\n", sep = "")
       pline <- paste0("  Power        = 1 - pnorm(", fmt(x$critical_value),
-                      " - ", fmt(x$ratio), ") = ", fmt_pct(x$power))
+                      " - ", fmt(x$ratio), ") = ", fmt_power(x$power))
       cat(pad_rule(pline, "[Rule 2]"), "\n")
     }
 
@@ -151,7 +145,8 @@ print_computation <- function(x, effect_label, n_cond) {
       } else {
         paste0("1 / ", fmt_val(source$n_pilot))
       }
-      rule_star <- if (source$interaction) "[Rule 9*]" else "[Rule 9]"
+      rule_star <- if (source$interaction) "[Pilot Rule 3*]"
+                   else "[Pilot Rule 3]"
       cfline <- paste0("  Conservative factor = sqrt(", cf_inner,
                        ") + 1 = ", fmt(x$conservative_factor))
       cat(pad_rule(cfline, rule_star), "\n")
@@ -159,17 +154,17 @@ print_computation <- function(x, effect_label, n_cond) {
 
     # MDE factor
     ci_arg <- 1 - (1 - x$ci) / 2
-    mfline <- paste0("  MDE factor          = qnorm(", fmt_val(ci_arg),
-                     ") + qnorm(", fmt(x$power), ") = ",
+    mfline <- paste0("  MDE factor          = qnorm(", fmt_prob(ci_arg),
+                     ") + qnorm(", fmt_prob(x$power), ") = ",
                      fmt(x$mde_factor_val))
-    cat(pad_rule(mfline, "[Table 2]"), "\n")
+    cat(pad_rule(mfline, mde_factor_table(x$power, x$ci)), "\n")
 
     # n formula
     cat(format_n_formula(x))
 
     # n result
-    total <- n_cond * x$n_planned
-    cond_note <- if (n_cond == 4) ", 4 conditions" else ""
+    total <- n_conditions(source) * x$n_planned
+    cond_note <- if (source$interaction) ", 4 conditions" else ""
     result_line <- paste0("                      = ", fmt_int(x$n_planned),
                           " per condition (", fmt_int(total), " total",
                           cond_note, ")")
@@ -180,42 +175,34 @@ print_computation <- function(x, effect_label, n_cond) {
 # Format the SE computation line for find_mde / find_power
 format_se_line <- function(x) {
   source <- x$source
-  se_str <- fmt(x$se)
+  is_int <- source$interaction
 
   if (source$type == "sd") {
     has_adj <- source$r_squared > 0
-    is_int <- source$interaction
     adj <- if (has_adj) paste0(" * sqrt(1 - ", fmt_val(source$r_squared), ")") else ""
     denom <- if (is_int) paste0("sqrt(", fmt_val(x$n_planned), ")")
              else paste0("sqrt(2 * ", fmt_val(x$n_planned), ")")
     formula <- paste0("2 * ", fmt_val(source$sd_y), adj, " / ", denom)
-
-    if (has_adj && is_int) rules <- "[Rules 3-4*]"
-    else if (has_adj) rules <- "[Rules 3-4]"
-    else if (is_int) rules <- "[Rule 3*]"
-    else rules <- "[Rule 3]"
-
-    paste0(pad_rule(paste0("  Predicted SE = ", formula, " = ", se_str),
-                    rules), "\n")
+    rule <- paste0(if (has_adj) "[Rules 3-4" else "[Rule 3",
+                   if (is_int) "*]" else "]")
 
   } else if (source$type == "existing") {
     formula <- paste0("sqrt(", fmt_val(source$n_existing), " / ",
                       fmt_val(x$n_planned), ") * ",
                       fmt_val(source$se_existing))
-    paste0(pad_rule(paste0("  Predicted SE = ", formula, " = ", se_str),
-                    "[Rule 7]"), "\n")
+    rule <- "[Pilot Rule 1]"
 
   } else {
-    is_int <- source$interaction
     cf_inner <- if (is_int) paste0("1/(2*", fmt_val(source$n_pilot), ")")
                 else paste0("1/", fmt_val(source$n_pilot))
     formula <- paste0("sqrt(", fmt_val(source$n_pilot), " / ",
                       fmt_val(x$n_planned), ") * (sqrt(", cf_inner,
                       ") + 1) * ", fmt_val(source$se_pilot))
-    rule <- if (is_int) "[Rule 9*]" else "[Rule 9]"
-    paste0(pad_rule(paste0("  Predicted SE = ", formula, " = ", se_str),
-                    rule), "\n")
+    rule <- if (is_int) "[Pilot Rule 3*]" else "[Pilot Rule 3]"
   }
+
+  paste0(pad_rule(paste0("  Predicted SE = ", formula, " = ", fmt(x$se)),
+                  rule), "\n")
 }
 
 # Format the n formula line for find_n
@@ -247,7 +234,11 @@ format_n_formula <- function(x) {
 # Format the rule reference for find_n
 format_n_rule <- function(x) {
   source <- x$source
-  rule_num <- switch(source$type, sd = "6", existing = "8", pilot = "10")
-  if (source$interaction) paste0("[Rule ", rule_num, "*]")
-  else paste0("[Rule ", rule_num, "]")
+  # Rule 6 is from the tutorial paper; Pilot Rules 2 and 4 are Rules 2 and 4
+  # of the companion paper on pilot data. Pilot Rule 2 needs no modification
+  # for interactions, so it carries no star.
+  switch(source$type,
+    sd = if (source$interaction) "[Rule 6*]" else "[Rule 6]",
+    existing = "[Pilot Rule 2]",
+    pilot = if (source$interaction) "[Pilot Rule 4*]" else "[Pilot Rule 4]")
 }

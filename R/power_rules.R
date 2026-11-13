@@ -68,10 +68,17 @@ power_rules <- function() {
         d = "Custom")
     )
     if (pow_choice == "d") {
-      power_val <- ask_power(
-        "Enter your desired power level (e.g., 0.85 for 85%):",
-        hint = "Must be between 0 and 1"
-      )
+      # Power cannot be at or below the size of the test
+      size <- fmt_val(test_size(ci))
+      repeat {
+        power_val <- ask_power(
+          "Enter your desired power level (e.g., 0.85 for 85%):",
+          hint = paste0("Must be between ", size, " and 1")
+        )
+        if (power_val > test_size(ci) + 1e-8) break
+        cat("  Please enter a number greater than ", size,
+            " (the size of the test).\n", sep = "")
+      }
     } else {
       power_val <- switch(pow_choice, a = 0.80, b = 0.90, c = 0.95)
     }
@@ -129,10 +136,14 @@ power_rules <- function() {
 
   # Goal-specific inputs
   if (goal_type %in% c("mde", "power")) {
-    n_planned <- ask_number(
-      "How many respondents per condition in the planned study?",
-      hint = "The number in each arm, not the total"
-    )
+    repeat {
+      n_planned <- ask_number(
+        "How many respondents per condition in the planned study?",
+        hint = "The number in each arm, not the total"
+      )
+      if (abs(n_planned - round(n_planned)) < 1e-8) break
+      cat("  Please enter a whole number.\n")
+    }
   }
 
   if (goal_type %in% c("power", "n")) {
@@ -159,9 +170,11 @@ power_rules <- function() {
   )
 
   result <- switch(goal_type,
-    mde = find_mde(source_obj, n_planned = n_planned, ci = ci),
-    power = find_power(source_obj, n_planned = n_planned, tau = tau, ci = ci),
-    n = find_n(source_obj, tau = tau, power = power_val, ci = ci)
+    mde = find_mde(source_obj, n_planned = n_planned, ci = ci, quiet = FALSE),
+    power = find_power(source_obj, n_planned = n_planned, tau = tau, ci = ci,
+                       quiet = FALSE),
+    n = find_n(source_obj, tau = tau, power = power_val, ci = ci,
+               quiet = FALSE)
   )
 
   # --- Step 9: Print the pipeline ---

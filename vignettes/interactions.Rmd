@@ -21,9 +21,9 @@ This vignette explains why and shows how to use `interaction = TRUE` in the powe
 ## Why interactions require more power
 
 @Rainey_2026 identifies three reasons interactions typically need larger samples than main effects.
-First, estimating an interaction requires comparing four group means rather than two, which increases the standard error by a factor of 2 compared to a two-group treatment effect with the same total sample size.
-Second, a 2×2 factorial design has four conditions rather than two, so the same total sample size means fewer respondents per condition.
-Third, interactions are often smaller than main effects.
+First, estimating an interaction requires comparing four group means rather than two, which increases the standard error by a factor of √2 (about 41%) compared to a two-group treatment effect with the same number of respondents per condition, so matching the precision requires twice as many respondents per condition.
+Second, a 2×2 factorial design has four conditions rather than two, which doubles the total sample size again.
+Third, interactions are often smaller than main effects, and an interaction half the size of the main effect requires four times the sample.
 Together, these factors can require as much as 16 times the total sample size to achieve the same power for an interaction as for a main effect with similar precision---Gelman's "16x" intuition.
 
 ## Finding the required sample size from SD
@@ -104,7 +104,7 @@ from_existing(se_existing = 0.18, n_existing = 375, interaction = TRUE) |>
   find_mde(n_planned = 500)
 ```
 
-The SE is scaled from the existing study to the planned sample size using Rule 7, exactly as for a two-group design.
+The SE is scaled from the existing study to the planned sample size using Pilot Rule 1 [Rule 1 from @Rainey2024pilot], exactly as for a two-group design.
 The output reports the total as 2,000 (4 × 500) because `interaction = TRUE` tells the pipeline that the planned study is a 2×2 factorial.
 
 ```{r}

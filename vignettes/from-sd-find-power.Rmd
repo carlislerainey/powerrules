@@ -30,7 +30,7 @@ Ahler and Sood estimate a treatment effect of 6.4 points with a 95% confidence i
 
 Suppose we plan to run this experiment on a CES module with 1,000 respondents (500 per condition).
 To predict the standard error using Rule 3 of @Rainey_2026, we need the standard deviation of the outcome in a reference population.
-The 2020 American National Elections Study (ANES) asks a similar question: respondents report their feelings toward the Democratic or Republican *party* on a 101-point feeling thermometer.
+The 2020 American National Election Study (ANES) asks a similar question: respondents report their feelings toward the Democratic or Republican *party* on a 101-point feeling thermometer.
 Ahler and Sood ask about *supporters of* the party rather than the party itself, so the measures are not identical, but the ANES provides a reasonable approximation.
 The standard deviation of the ANES feeling thermometer responses is 20.8.
 
@@ -51,7 +51,7 @@ This falls below the conventional 80% threshold.
 ## With a pre-post measurement strategy
 
 @Clifford2021 suggest measuring the outcome both before and after treatment and controlling for the pre-treatment measure.
-In a small pilot with 250 respondents, @Cutler2024 measure feelings toward supporters of the out-party before and after the treatment and find that the pre-treatment measure has an R^2^ of about 73%.
+In a pilot study, @Cutler2024 measure feelings toward supporters of the out-party before and after the treatment and find that the pre-treatment measure has an R^2^ of about 76%.
 If we set R^2^ = 0.40---a conservative assumption given the pilot result---the power changes substantially:
 
 ```{r}
@@ -71,7 +71,8 @@ Since tau = 3 is smaller than 3.27, the power for tau = 3 must be below 80%---an
 ## How to choose tau
 
 The `tau` argument is the treatment effect assumed for computing power.
-The lower bound of a confidence interval from a closely related study is a useful starting point [@Rainey_2026].
+By default, tau should be the smallest substantively meaningful effect [@Rainey_2026].
+The lower bound of a confidence interval from a closely related study is a simple starting point.
 In the Ahler and Sood example, the lower bound of their 95% confidence interval is 3 points, so tau = 3 represents the smallest effect consistent with their findings.
 Choosing a tau that is too large makes the study appear more powerful than it is.
 

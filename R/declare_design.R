@@ -17,64 +17,14 @@
 #' from_sd(sd_y = 20.8) |> find_power(n = 268, tau = 2.5) |> write_DeclareDesign()
 write_DeclareDesign <- function(result, tau = NULL) {
 
-  # --- Validation ---
-  if (!inherits(result, "power_result"))
-    stop("`result` must be a power_result object ",
-         "(use find_mde(), find_power(), or find_n())")
+  check_result(result, "write_DeclareDesign")
+  sim <- sim_setup(result, tau)
 
-  if (result$source$interaction)
-    stop("write_DeclareDesign() does not yet support interaction designs. ",
-         "This feature is planned for a future version.")
+  N_str <- fmt_val(2 * result$n_planned)
+  n_per_str <- fmt_val(result$n_planned)
 
-  if (!is.null(tau)) {
-    if (!is.numeric(tau) || length(tau) != 1 || is.na(tau) || tau <= 0)
-      stop("`tau` must be a positive number")
-  }
-
-  # --- Tau extraction ---
-  tau_from_mde <- FALSE
-  if (is.null(tau)) {
-    if (result$goal == "mde") {
-      tau <- result$mde_80
-      tau_from_mde <- TRUE
-    } else {
-      tau <- result$tau
-    }
-  }
-
-  # --- sd_coef determination ---
-  source <- result$source
-  n_planned <- result$n_planned
-  sd_backcalc <- FALSE
-
-  if (source$type == "sd") {
-    if (source$r_squared > 0) {
-      sd_coef <- source$sd_y * sqrt(1 - source$r_squared)
-    } else {
-      sd_coef <- source$sd_y
-    }
-  } else {
-    sd_coef <- result$se * sqrt(n_planned / 2)
-    sd_backcalc <- TRUE
-  }
-
-  # --- Format values for generated code ---
-  N_str <- fmt_val(2 * n_planned)
-  n_per_str <- fmt_val(n_planned)
-
-  tau_str <- if (tau_from_mde) fmt(tau) else fmt_val(tau)
-
-  sd_str <- if (source$type == "sd" && source$r_squared == 0) {
-    fmt_val(sd_coef)
-  } else {
-    fmt(sd_coef)
-  }
-
-  # CI / sidedness values
-  ci <- result$ci
-  ci_pct <- round(ci * 100)
-  p_threshold <- if (ci == 0.90) "0.10" else "0.05"
-  test_size <- if (ci == 0.90) "0.05" else "0.025"
+  # DeclareDesign's two-sided p-value threshold
+  p_threshold <- if (result$ci == 0.90) "0.10" else "0.05"
 
   # --- Build code string (no indentation; printed with 2-space prefix) ---
   code <- paste0(
@@ -86,12 +36,12 @@ write_DeclareDesign <- function(result, tau = NULL) {
     "\n",
     "my_design <-\n",
     "  # Model: ", N_str, " total respondents (", n_per_str, " per condition).\n",
-    "  # Y = tau * Z + noise, where SD(Y) = ", sd_str, " in the\n",
+    "  # Y = tau * Z + noise, where SD(Y) = ", sim$sd_str, " in the\n",
     "  # control group (Rule 3).\n",
     "  declare_model(\n",
     "    N = ", N_str, ",\n",
     "    U = rnorm(N),\n",
-    "    potential_outcomes(Y ~ ", tau_str, " * Z + ", sd_str, " * U)\n",
+    "    potential_outcomes(Y ~ ", sim$tau_str, " * Z + ", sim$sd_str, " * U)\n",
     "  ) +\n",
     "  # Inquiry: the average treatment effect.\n",
     "  declare_inquiry(ATE = mean(Y_Z_1 - Y_Z_0)) +\n",
@@ -117,51 +67,27 @@ write_DeclareDesign <- function(result, tau = NULL) {
 
   # --- Print formatted output ---
   cat(rule_line("DeclareDesign Code (Declaration 18.1)"), "\n")
-
-  if (tau_from_mde) {
-    cat("\n")
-    cat(wrap_sentence(
-      paste0("Note: Using tau = ", fmt(tau),
-             " (MDE at 80% power). Override with ",
-             "write_DeclareDesign(result, tau = ...).")
-    ), "\n")
-  }
-
-  if (sd_backcalc) {
-    cat("\n")
-    cat(wrap_sentence(
-      paste0("Note: The DeclareDesign code uses a back-calculated SD ",
-             "(from the predicted SE). For a more natural mapping, use ",
-             "from_sd() as the source.")
-    ), "\n")
-  }
-
-  cat("\n")
-  code_lines <- strsplit(code, "\n")[[1]]
-  for (line in code_lines) {
-    cat("  ", line, "\n", sep = "")
-  }
+  print_sim_notes(sim, "write_DeclareDesign", "DeclareDesign code")
+  print_code(code)
 
   cat("\n")
   cat(rule_line("Note on power definition"), "\n")
-  cat("\n")
-  cat(wrap_sentence(paste0(
+  print_note(
     "DeclareDesign does not easily support one-sided tests, so ",
     "power above uses two-sided tests. This closely matches the ",
     "directional power from powerrules (Rule 2) ",
     "above about 20% power. Below that, the two-sided power will ",
     "be somewhat higher because it counts significant results in ",
     "the wrong direction as well."
-  )), "\n")
+  )
 
   cat("\n")
   cat(rule_line("Reference"), "\n")
-  cat("\n")
-  cat(wrap_sentence(paste0(
+  print_note(
     "See Declaration 18.1 in Blair, Coppock, and Humphreys (2023), ",
     "\"Research Design in the Social Sciences,\" Princeton University ",
     "Press, Chapter 18."
-  )), "\n")
+  )
 
   invisible(code)
 }

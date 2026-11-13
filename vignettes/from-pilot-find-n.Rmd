@@ -43,7 +43,7 @@ The study requires 570 respondents per condition (1,140 total) for 95% power to 
 
 ## Why the conservative factor matters
 
-The conservative adjustment factor, sqrt(1/n~pilot~) + 1, inflates the predicted SE to account for noise in the pilot estimate [@Albers2018; @Rainey_2026].
+The conservative adjustment factor, sqrt(1/n~pilot~) + 1, inflates the predicted SE to account for noise in the pilot estimate [@Albers2018; @Rainey2024pilot].
 This increases the required sample size compared to treating the pilot as an "existing study."
 If we instead used `from_existing(se_existing = 2.13, n_existing = 85)`, the required sample size would be smaller, but the resulting study would risk being underpowered if the pilot SE underestimates the true SE.
 The conservative approach protects against this risk by building in a margin of safety.

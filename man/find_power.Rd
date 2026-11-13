@@ -4,20 +4,33 @@
 \alias{find_power}
 \title{Find the power for a given effect}
 \usage{
-find_power(source, n_planned = NULL, tau, ci = 0.9, n = NULL)
+find_power(
+  source,
+  n_planned = NULL,
+  tau,
+  ci = 0.9,
+  n = NULL,
+  quiet = getOption("powerrules.quiet", FALSE)
+)
 }
 \arguments{
-\item{source}{A \code{"power_source"} object.}
+\item{source}{A \code{"power_source"} object from \code{from_sd()},
+\code{from_existing()}, or \code{from_pilot()}.}
 
-\item{n_planned}{Respondents per condition in the planned study. Use
-\code{n_planned} when the source is \code{from_existing()} or \code{from_pilot()};
-use \code{n} when the source is \code{from_sd()}.}
+\item{n_planned}{Respondents per condition in the planned study (a whole
+number). Use \code{n_planned} when the source is \code{from_existing()} or
+\code{from_pilot()}; use \code{n} when the source is \code{from_sd()}.}
 
 \item{tau}{The assumed treatment effect (positive).}
 
 \item{ci}{Confidence interval level: 0.90 (default) or 0.95.}
 
 \item{n}{Alias for \code{n_planned}. Specify one or the other, not both.}
+
+\item{quiet}{If \code{TRUE}, compute the result without printing it. Defaults
+to \code{getOption("powerrules.quiet", FALSE)}, so
+\code{options(powerrules.quiet = TRUE)} silences every goal function.
+\code{print()} the returned object to see the output later.}
 }
 \value{
 A \code{"power_result"} object (returned invisibly).

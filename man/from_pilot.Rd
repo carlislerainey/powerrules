@@ -18,9 +18,10 @@ the conservative adjustment factor).}
 An object of class \code{"power_source"}.
 }
 \description{
-Uses Rule 9 from Rainey (2026). The SE and sample size from a pilot study
-are used to predict the SE of the planned study, with a conservative
-adjustment for pilot noise.
+Uses Pilot Rule 3: Rule 3 of the companion paper to Rainey (2026),
+"Automating Power Analysis with Pilot Data." The SE and sample size from
+a pilot study are used to predict the SE of the planned study, with a
+conservative adjustment for pilot noise.
 }
 \examples{
 from_pilot(se_pilot = 2.13, n_pilot = 85) |>

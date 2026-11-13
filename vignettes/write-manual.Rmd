@@ -46,6 +46,8 @@ The result matches the analytical 74% from powerrules.
 
 ```{r}
 # Manual power calculation
+# Uses the paper's rounded constants, so results can differ slightly
+# from the powerrules pipeline, which uses exact values.
 
 # --- Inputs ---
 sd_y <- 20.8   # SD of outcome in reference population

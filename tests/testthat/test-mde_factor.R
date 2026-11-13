@@ -1,24 +1,9 @@
-test_that("mde_factor() returns correct values for standard power levels", {
-  # 80% power, 90% CI: qnorm(0.95) + qnorm(0.80)
-  expect_equal(mde_factor(0.80, 0.90), qnorm(0.95) + qnorm(0.80))
-
-  # 95% power, 90% CI: qnorm(0.95) + qnorm(0.95)
-  expect_equal(mde_factor(0.95, 0.90), qnorm(0.95) + qnorm(0.95))
-
-  # 90% power, 90% CI: qnorm(0.95) + qnorm(0.90)
-  expect_equal(mde_factor(0.90, 0.90), qnorm(0.95) + qnorm(0.90))
-
-  # 80% power, 95% CI: qnorm(0.975) + qnorm(0.80)
-  expect_equal(mde_factor(0.80, 0.95), qnorm(0.975) + qnorm(0.80))
-
-  # 95% power, 95% CI: qnorm(0.975) + qnorm(0.95)
-  expect_equal(mde_factor(0.95, 0.95), qnorm(0.975) + qnorm(0.95))
-})
-
-test_that("mde_factor() gives known approximate values", {
+test_that("mde_factor() gives known values for standard power levels", {
+  # 90% CI: qnorm(0.95) + qnorm(power)
   expect_equal(mde_factor(0.80, 0.90), 2.4863, tolerance = 0.001)
   expect_equal(mde_factor(0.95, 0.90), 3.2897, tolerance = 0.001)
   expect_equal(mde_factor(0.90, 0.90), 2.9265, tolerance = 0.001)
+  # 95% CI: qnorm(0.975) + qnorm(power)
   expect_equal(mde_factor(0.80, 0.95), 2.8016, tolerance = 0.001)
   expect_equal(mde_factor(0.95, 0.95), 3.6049, tolerance = 0.001)
 })

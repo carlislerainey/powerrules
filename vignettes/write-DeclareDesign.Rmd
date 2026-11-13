@@ -58,6 +58,7 @@ my_design <-
   declare_measurement(Y = reveal_outcomes(Y ~ Z)) +
   declare_estimator(Y ~ Z, inquiry = "ATE")
 
+set.seed(1234)  # so this page shows the same result on every build
 diagnosis <- diagnose_design(my_design, sims = 500,
   diagnosands = declare_diagnosands(
     power = mean(p.value <= 0.10)

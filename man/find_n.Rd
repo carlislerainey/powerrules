@@ -4,24 +4,40 @@
 \alias{find_n}
 \title{Find the required sample size}
 \usage{
-find_n(source, tau, power = 0.8, ci = 0.9)
+find_n(
+  source,
+  tau,
+  power = 0.8,
+  ci = 0.9,
+  quiet = getOption("powerrules.quiet", FALSE)
+)
 }
 \arguments{
-\item{source}{A \code{"power_source"} object.}
+\item{source}{A \code{"power_source"} object from \code{from_sd()},
+\code{from_existing()}, or \code{from_pilot()}.}
 
 \item{tau}{The assumed treatment effect (positive).}
 
-\item{power}{Desired power level (default 0.80).}
+\item{power}{Desired power level (default 0.80). Must be greater than the
+size of the test (0.05 for a 90 percent confidence interval, 0.025 for
+a 95 percent confidence interval).}
 
 \item{ci}{Confidence interval level: 0.90 (default) or 0.95.}
+
+\item{quiet}{If \code{TRUE}, compute the result without printing it. Defaults
+to \code{getOption("powerrules.quiet", FALSE)}, so
+\code{options(powerrules.quiet = TRUE)} silences every goal function.
+\code{print()} the returned object to see the output later.}
 }
 \value{
 A \code{"power_result"} object (returned invisibly).
 }
 \description{
 Given a power source, assumed treatment effect, and desired power level,
-computes the required sample size per condition (Rules 6/8/10 from
-Rainey, 2026).
+computes the required sample size per condition. Uses Rule 6 from Rainey
+(2026) with \code{from_sd()}, and Pilot Rules 2 and 4 (Rules 2 and 4 of the
+companion paper, "Automating Power Analysis with Pilot Data") with
+\code{from_existing()} and \code{from_pilot()}.
 }
 \examples{
 from_sd(sd_y = 20.8) |> find_n(tau = 3)
