@@ -26,7 +26,11 @@ find_n(
 
 - source:
 
-  A `"power_source"` object.
+  A `"power_source"` object from
+  [`from_sd()`](https://carlislerainey.github.io/powerrules/reference/from_sd.md),
+  [`from_existing()`](https://carlislerainey.github.io/powerrules/reference/from_existing.md),
+  or
+  [`from_pilot()`](https://carlislerainey.github.io/powerrules/reference/from_pilot.md).
 
 - tau:
 
