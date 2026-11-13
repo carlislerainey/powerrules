@@ -6,7 +6,14 @@ computes the power (Rule 2 from Rainey, 2026).
 ## Usage
 
 ``` r
-find_power(source, n_planned = NULL, tau, ci = 0.9, n = NULL)
+find_power(
+  source,
+  n_planned = NULL,
+  tau,
+  ci = 0.9,
+  n = NULL,
+  quiet = getOption("powerrules.quiet", FALSE)
+)
 ```
 
 ## Arguments
@@ -17,8 +24,8 @@ find_power(source, n_planned = NULL, tau, ci = 0.9, n = NULL)
 
 - n_planned:
 
-  Respondents per condition in the planned study. Use `n_planned` when
-  the source is
+  Respondents per condition in the planned study (a whole number). Use
+  `n_planned` when the source is
   [`from_existing()`](https://carlislerainey.github.io/powerrules/reference/from_existing.md)
   or
   [`from_pilot()`](https://carlislerainey.github.io/powerrules/reference/from_pilot.md);
@@ -36,6 +43,14 @@ find_power(source, n_planned = NULL, tau, ci = 0.9, n = NULL)
 - n:
 
   Alias for `n_planned`. Specify one or the other, not both.
+
+- quiet:
+
+  If `TRUE`, compute the result without printing it. Defaults to
+  `getOption("powerrules.quiet", FALSE)`, so
+  `options(powerrules.quiet = TRUE)` silences every goal function.
+  [`print()`](https://rdrr.io/r/base/print.html) the returned object to
+  see the output later.
 
 ## Value
 

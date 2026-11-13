@@ -1,7 +1,8 @@
 # Create a power source from pilot data
 
-Uses Rule 9 from Rainey (2026). The SE and sample size from a pilot
-study are used to predict the SE of the planned study, with a
+Uses Pilot Rule 3: Rule 3 of the companion paper to Rainey (2026),
+"Automating Power Analysis with Pilot Data." The SE and sample size from
+a pilot study are used to predict the SE of the planned study, with a
 conservative adjustment for pilot noise.
 
 ## Usage
@@ -44,7 +45,7 @@ from_pilot(se_pilot = 2.13, n_pilot = 85) |>
 #>     n (pilot)  = 85 per condition
 #>     n (planned)   = 500 per condition (1,000 total)
 #> 
-#>   Predicted SE = sqrt(85 / 500) * (sqrt(1/85) + 1) * 2.13 = 0.97  [Rule 9]
+#>   Predicted SE = sqrt(85 / 500) * (sqrt(1/85) + 1) * 2.13 = 0.97  [Pilot Rule 3]
 #>   MDE (80% power) = 2.49 * 0.97 = 2.42                          [Rule 5] 
 #>   MDE (95% power) = 3.29 * 0.97 = 3.20                          [Rule 5] 
 #> 

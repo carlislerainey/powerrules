@@ -1,9 +1,10 @@
 # powerrules
 
 Power analysis for balanced, between-subjects designs using the rules
-from Rainey (2026) “Power Rules: Practical Advice for Computing Power
-(and Automating with Pilot Data).” The
-[preprint](http://dx.doi.org/10.31219/osf.io/5am9q_v3) is on OSF.
+from Rainey (2026) “Power Rules: Practical Advice for Computing
+Statistical Power” and its companion paper, “Automating Power Analysis
+with Pilot Data.” The [preprint](https://osf.io/preprints/osf/5am9q) is
+on OSF.
 
 ## Quick Start
 
@@ -15,6 +16,7 @@ pipeline that mirrors the conceptual logic from the paper. You can save
 this pipeline as a record of your inputs and outputs.
 
 ``` r
+
 # install from github
 pak::pak("carlislerainey/powerrules")
 
@@ -53,6 +55,7 @@ Both guides produce a one-line pipeline in the form
 `from_*() |> find_*()`. Here is an example:
 
 ``` r
+
 library(powerrules)
 
 from_sd(sd_y = 20.8) |>
@@ -94,11 +97,11 @@ copy into a pre-registration or methods section.
 Each find-from combination has a dedicated vignette with a fully worked
 example.
 
-|                        | Find the MDE                                                                                 | Find the power                                                                                 | Find the sample size                                                                       |
-|:-----------------------|:---------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------|
-| From a reference SD    | [vignette](https://carlislerainey.github.io/powerrules/articles/from-sd-find-mde.html)       | [vignette](https://carlislerainey.github.io/powerrules/articles/from-sd-find-power.html)       | [vignette](https://carlislerainey.github.io/powerrules/articles/from-sd-find-n.html)       |
+|  | Find the MDE | Find the power | Find the sample size |
+|:---|:---|:---|:---|
+| From a reference SD | [vignette](https://carlislerainey.github.io/powerrules/articles/from-sd-find-mde.html) | [vignette](https://carlislerainey.github.io/powerrules/articles/from-sd-find-power.html) | [vignette](https://carlislerainey.github.io/powerrules/articles/from-sd-find-n.html) |
 | From an existing study | [vignette](https://carlislerainey.github.io/powerrules/articles/from-existing-find-mde.html) | [vignette](https://carlislerainey.github.io/powerrules/articles/from-existing-find-power.html) | [vignette](https://carlislerainey.github.io/powerrules/articles/from-existing-find-n.html) |
-| From pilot data        | [vignette](https://carlislerainey.github.io/powerrules/articles/from-pilot-find-mde.html)    | [vignette](https://carlislerainey.github.io/powerrules/articles/from-pilot-find-power.html)    | [vignette](https://carlislerainey.github.io/powerrules/articles/from-pilot-find-n.html)    |
+| From pilot data | [vignette](https://carlislerainey.github.io/powerrules/articles/from-pilot-find-mde.html) | [vignette](https://carlislerainey.github.io/powerrules/articles/from-pilot-find-power.html) | [vignette](https://carlislerainey.github.io/powerrules/articles/from-pilot-find-n.html) |
 
 Additional vignettes:
 
@@ -127,21 +130,19 @@ approach.
 ## Citation
 
 Rainey, Carlisle (2026). “Power Rules: Practical Advice for Computing
-Power (and Automating with Pilot Data).” DOI:
-[10.31219/osf.io/5am9q_v3](https://doi.org/10.31219/osf.io/5am9q_v3).
+Statistical Power.” *Political Analysis*. Forthcoming. Preprint:
+<https://osf.io/preprints/osf/5am9q>.
 
 BibTeX:
 
 ``` bibtex
-@misc{Rainey_2026,
-  title = {Power Rules: Practical Advice for Computing Power
-           (and Automating with Pilot Data)},
+@article{Rainey_2026,
+  title = {Power Rules: Practical Advice for Computing Statistical Power},
   author = {Rainey, Carlisle},
+  journal = {Political Analysis},
   year = {2026},
-  month = feb,
-  url = {http://dx.doi.org/10.31219/osf.io/5am9q_v3},
-  DOI = {10.31219/osf.io/5am9q_v3},
-  publisher = {Center for Open Science}
+  note = {Forthcoming},
+  url = {https://osf.io/preprints/osf/5am9q}
 }
 ```
 

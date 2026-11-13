@@ -6,7 +6,13 @@ Given a power source and planned sample size, computes the MDE at both
 ## Usage
 
 ``` r
-find_mde(source, n_planned = NULL, ci = 0.9, n = NULL)
+find_mde(
+  source,
+  n_planned = NULL,
+  ci = 0.9,
+  n = NULL,
+  quiet = getOption("powerrules.quiet", FALSE)
+)
 ```
 
 ## Arguments
@@ -21,8 +27,8 @@ find_mde(source, n_planned = NULL, ci = 0.9, n = NULL)
 
 - n_planned:
 
-  Respondents per condition in the planned study. Use `n_planned` when
-  the source is
+  Respondents per condition in the planned study (a whole number). Use
+  `n_planned` when the source is
   [`from_existing()`](https://carlislerainey.github.io/powerrules/reference/from_existing.md)
   or
   [`from_pilot()`](https://carlislerainey.github.io/powerrules/reference/from_pilot.md);
@@ -36,6 +42,14 @@ find_mde(source, n_planned = NULL, ci = 0.9, n = NULL)
 - n:
 
   Alias for `n_planned`. Specify one or the other, not both.
+
+- quiet:
+
+  If `TRUE`, compute the result without printing it. Defaults to
+  `getOption("powerrules.quiet", FALSE)`, so
+  `options(powerrules.quiet = TRUE)` silences every goal function.
+  [`print()`](https://rdrr.io/r/base/print.html) the returned object to
+  see the output later.
 
 ## Value
 
@@ -68,4 +82,9 @@ from_sd(sd_y = 20.8) |> find_mde(n = 500)
 #>   Note: The paper rounds the MDE factor to 2.5 for 80% power and 3.3 for
 #>   95% power. This software uses exact values (2.49 and 3.29), so results
 #>   differ slightly from hand calculations using the rounded factors. 
+
+# Compute without printing, then print later
+result <- from_sd(sd_y = 20.8) |> find_mde(n = 500, quiet = TRUE)
+result$mde_80
+#> [1] 3.270976
 ```

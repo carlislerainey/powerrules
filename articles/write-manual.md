@@ -16,6 +16,7 @@ per condition and assume a treatment effect of 3 points (the lower bound
 of Ahler and Sood’s 95% confidence interval).
 
 ``` r
+
 library(powerrules)
 
 result <- from_sd(sd_y = 20.8) |>
@@ -49,12 +50,15 @@ result <- from_sd(sd_y = 20.8) |>
 takes the result and prints a self-contained base R script:
 
 ``` r
+
 write_manual(result)
 ```
 
     #> -- Manual Calculation -------------------------------------------------- 
     #> 
     #>   # Manual power calculation
+    #>   # Uses the paper's rounded constants, so results can differ slightly
+    #>   # from the powerrules pipeline, which uses exact values.
     #>   
     #>   # --- Inputs ---
     #>   sd_y <- 20.8   # SD of outcome in reference population
@@ -77,7 +81,10 @@ The generated code computes the predicted SE and power using base R
 only. The result matches the analytical 74% from powerrules.
 
 ``` r
+
 # Manual power calculation
+# Uses the paper's rounded constants, so results can differ slightly
+# from the powerrules pipeline, which uses exact values.
 
 # --- Inputs ---
 sd_y <- 20.8   # SD of outcome in reference population
@@ -96,12 +103,14 @@ cat("Predicted SE:        ", round(se, 2), "\n")
     #> Predicted SE:         1.32
 
 ``` r
+
 cat("tau / SE:            ", round(tau / se, 2), "\n")
 ```
 
     #> tau / SE:             2.28
 
 ``` r
+
 cat("Power:               ", round(power * 100), "%\n")
 ```
 
@@ -110,5 +119,5 @@ cat("Power:               ", round(power * 100), "%\n")
 ## References
 
 Ahler, Douglas J., and Gaurav Sood. 2018. “The Parties in Our Heads:
-Misperceptions about Party Composition and Their Consequences.” *The
-Journal of Politics* 80 (3): 964–81. <https://doi.org/10.1086/697253>.
+Misperceptions about Party Composition and Their Consequences.” *Journal
+of Politics* 80 (3): 964–81. <https://doi.org/10.1086/697253>.

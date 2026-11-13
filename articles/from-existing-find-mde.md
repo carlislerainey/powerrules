@@ -21,16 +21,17 @@ information. Compared to a control group, the treatment group evaluated
 supporters of the out-party more favorably on a 101-point feeling
 thermometer. Ahler and Sood estimate a treatment effect of 6.4 points
 with a standard error of 1.8, a 95% confidence interval of \[3, 10\],
-and a sample of 268 per condition. Broockman, Kalla, and Westwood (2022)
-closely replicate this result, estimating a treatment effect of 3.9 with
-a 90% confidence interval of \[1.1, 6.6\].
+and a sample of 268 per condition. Broockman et al. (2023) closely
+replicate this result, estimating a treatment effect of 3.9 with a 90%
+confidence interval of \[1.1, 6.6\].
 
 Suppose we plan to run a similar experiment on a CES module with 1,000
 respondents (500 per condition). Using the SE and sample size from Ahler
-and Sood, we predict the standard error in our larger study (Rule 7 from
-Rainey (2026)).
+and Sood, we predict the standard error in our larger study (Pilot Rule
+1, which is Rule 1 from Rainey (2026a)).
 
 ``` r
+
 library(powerrules)
 
 from_existing(se_existing = 1.8, n_existing = 268) |>
@@ -47,7 +48,7 @@ from_existing(se_existing = 1.8, n_existing = 268) |>
     #>     n (existing)  = 268 per condition
     #>     n (planned)   = 500 per condition (1,000 total)
     #> 
-    #>   Predicted SE = sqrt(268 / 500) * 1.8 = 1.32                   [Rule 7]
+    #>   Predicted SE = sqrt(268 / 500) * 1.8 = 1.32             [Pilot Rule 1]
     #>   MDE (80% power) = 2.49 * 1.32 = 3.28                          [Rule 5] 
     #>   MDE (95% power) = 3.29 * 1.32 = 4.34                          [Rule 5] 
     #> 
@@ -63,16 +64,16 @@ from_existing(se_existing = 1.8, n_existing = 268) |>
     #>   95% power. This software uses exact values (2.49 and 3.29), so results
     #>   differ slightly from hand calculations using the rounded factors.
 
-The output scales the existing SE to the planned sample size (Rule 7),
-then computes the MDE at 80% and 95% power (Rule 5). With 500 per
-condition, the study has 80% power to detect a treatment effect of 3.28
-points on the 101-point scale.
+The output scales the existing SE to the planned sample size (Pilot Rule
+1), then computes the MDE at 80% and 95% power (Rule 5 from Rainey
+(2026b)). With 500 per condition, the study has 80% power to detect a
+treatment effect of 3.28 points on the 101-point scale.
 
 ## What makes an existing study “close enough”?
 
 The existing study and planned study should share the same design
 (balanced, between-subjects), a similar population, and the same or a
-similar outcome measure (Rainey 2026). The existing study can differ in
+similar outcome measure (Rainey 2026a). The existing study can differ in
 sample size and treatment—the rule adjusts for sample size and the
 researcher supplies the assumed effect separately. In the example above,
 Ahler and Sood’s study uses the same outcome measure (feeling
@@ -100,14 +101,17 @@ for worked examples.
 ## References
 
 Ahler, Douglas J., and Gaurav Sood. 2018. “The Parties in Our Heads:
-Misperceptions about Party Composition and Their Consequences.” *The
-Journal of Politics* 80 (3): 964–81. <https://doi.org/10.1086/697253>.
+Misperceptions about Party Composition and Their Consequences.” *Journal
+of Politics* 80 (3): 964–81. <https://doi.org/10.1086/697253>.
 
-Broockman, David E., Joshua L. Kalla, and Sean J. Westwood. 2022. “Does
+Broockman, David E., Joshua L. Kalla, and Sean J. Westwood. 2023. “Does
 Affective Polarization Undermine Democratic Norms or Accountability?
 Maybe Not.” *American Journal of Political Science* 67 (3): 808–28.
 <https://doi.org/10.1111/ajps.12719>.
 
-Rainey, Carlisle. 2026. “Power Rules: Practical Advice for Computing
-Power (and Automating with Pilot Data).” Center for Open Science.
-<https://doi.org/10.31219/osf.io/5am9q_v3>.
+Rainey, Carlisle. 2026a. “Automating Power Analysis with Pilot Data.”
+Unpublished manuscript.
+
+Rainey, Carlisle. 2026b. “Power Rules: Practical Advice for Computing
+Statistical Power.” *Political Analysis*.
+<https://osf.io/preprints/osf/5am9q>.

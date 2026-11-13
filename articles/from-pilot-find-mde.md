@@ -12,19 +12,19 @@ answers this question.
 
 ## Example
 
-Cutler, Pietryka, and Rainey (2024) run a pilot replication of Ahler and
-Sood (2018), who find that correcting respondents’ misperceptions of
-their out-party reduces affective polarization on a 101-point feeling
-thermometer. Ahler and Sood estimate a treatment effect of 6.4 points
-with a 95% confidence interval of \[3, 10\]. Cutler et al. use the
-pre-post measurement strategy of Clifford, Sheagley, and Piston (2021),
-measuring feelings toward supporters of the out-party before and after
-treatment. In the pilot, with 85 per condition, they estimate a standard
-error of 2.13.
+Cutler et al. (2026) run a pilot replication of Ahler and Sood (2018),
+who find that correcting respondents’ misperceptions of their out-party
+reduces affective polarization on a 101-point feeling thermometer. Ahler
+and Sood estimate a treatment effect of 6.4 points with a 95% confidence
+interval of \[3, 10\]. Cutler et al. use the pre-post measurement
+strategy of Clifford et al. (2021), measuring feelings toward supporters
+of the out-party before and after treatment. In the pilot, with 85 per
+condition, they estimate a standard error of 2.13.
 
 Suppose we plan to run the full study with 500 per condition.
 
 ``` r
+
 library(powerrules)
 
 from_pilot(se_pilot = 2.13, n_pilot = 85) |>
@@ -41,7 +41,7 @@ from_pilot(se_pilot = 2.13, n_pilot = 85) |>
     #>     n (pilot)  = 85 per condition
     #>     n (planned)   = 500 per condition (1,000 total)
     #> 
-    #>   Predicted SE = sqrt(85 / 500) * (sqrt(1/85) + 1) * 2.13 = 0.97  [Rule 9]
+    #>   Predicted SE = sqrt(85 / 500) * (sqrt(1/85) + 1) * 2.13 = 0.97  [Pilot Rule 3]
     #>   MDE (80% power) = 2.49 * 0.97 = 2.42                          [Rule 5] 
     #>   MDE (95% power) = 3.29 * 0.97 = 3.20                          [Rule 5] 
     #> 
@@ -59,9 +59,9 @@ from_pilot(se_pilot = 2.13, n_pilot = 85) |>
     #>   differ slightly from hand calculations using the rounded factors.
 
 The output predicts the standard error in the full study using the pilot
-SE, sample size, and a conservative adjustment factor (Rule 9 from
-Rainey (2026)). With 500 per condition, the study has 80% power to
-detect a treatment effect of 2.42 points.
+SE, sample size, and a conservative adjustment factor (Pilot Rule 3,
+which is Rule 3 from Rainey (2026)). With 500 per condition, the study
+has 80% power to detect a treatment effect of 2.42 points.
 
 ## The conservative adjustment factor
 
@@ -77,22 +77,22 @@ by about 11%.
 ## References
 
 Ahler, Douglas J., and Gaurav Sood. 2018. “The Parties in Our Heads:
-Misperceptions about Party Composition and Their Consequences.” *The
-Journal of Politics* 80 (3): 964–81. <https://doi.org/10.1086/697253>.
+Misperceptions about Party Composition and Their Consequences.” *Journal
+of Politics* 80 (3): 964–81. <https://doi.org/10.1086/697253>.
 
 Albers, Casper, and Daniël Lakens. 2018. “When Power Analyses Based on
 Pilot Data Are Biased: Inaccurate Effect Size Estimators and Follow-up
-Bias.” *Journal of Experimental Social Psychology* 74 (January): 187–95.
+Bias.” *Journal of Experimental Social Psychology* 74: 187–95.
 <https://doi.org/10.1016/j.jesp.2017.09.004>.
 
 Clifford, Scott, Geoffrey Sheagley, and Spencer Piston. 2021.
 “Increasing Precision Without Altering Treatment Effects: Repeated
 Measures Designs in Survey Experiments.” *American Political Science
-Review* 115 (3): 1048–65. <https://doi.org/10.1017/s0003055421000241>.
+Review* 115 (3): 1048–65. <https://doi.org/10.1017/S0003055421000241>.
 
-Cutler, Austin Lloyd, Matthew Pietryka, and Carlisle Rainey. 2024.
-“Merely Asking: A Replication of Ahler and Sood (2018).”
+Cutler, Austin Lloyd, Matthew T. Pietryka, and Carlisle Rainey. 2026.
+“Merely Asking: A Replication of Ahler and Sood (2018).” Unpublished
+manuscript.
 
-Rainey, Carlisle. 2026. “Power Rules: Practical Advice for Computing
-Power (and Automating with Pilot Data).” Center for Open Science.
-<https://doi.org/10.31219/osf.io/5am9q_v3>.
+Rainey, Carlisle. 2026. “Automating Power Analysis with Pilot Data.”
+Unpublished manuscript.

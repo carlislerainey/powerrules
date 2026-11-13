@@ -20,14 +20,14 @@ demographic attributes, then receive the correct information. Compared
 to a control group, the treatment group evaluated supporters of the
 out-party more favorably on a 101-point feeling thermometer. Ahler and
 Sood estimate a treatment effect of 6.4 points with a 95% confidence
-interval of \[3, 10\]. Broockman, Kalla, and Westwood (2022) closely
-replicate this result, estimating a treatment effect of 3.9 with a 90%
-confidence interval of \[1.1, 6.6\].
+interval of \[3, 10\]. Broockman et al. (2023) closely replicate this
+result, estimating a treatment effect of 3.9 with a 90% confidence
+interval of \[1.1, 6.6\].
 
 Suppose we plan to run this experiment on a CES module with 1,000
 respondents (500 per condition). To predict the standard error using
 Rule 3 of Rainey (2026), we need the standard deviation of the outcome
-in a reference population. The 2020 American National Elections Study
+in a reference population. The 2020 American National Election Study
 (ANES) asks a similar question: respondents report their feelings toward
 the Democratic or Republican *party* on a 101-point feeling thermometer.
 Ahler and Sood ask about *supporters of* the party rather than the party
@@ -36,6 +36,7 @@ reasonable approximation. The standard deviation of the ANES feeling
 thermometer responses is 20.8.
 
 ``` r
+
 library(powerrules)
 
 from_sd(sd_y = 20.8) |>
@@ -83,14 +84,14 @@ shrinks the standard error (Rule 4 from Rainey 2026). The `r_squared`
 argument specifies the R² of a regression of the outcome on the planned
 control variables in a reference population.
 
-Broockman, Kalla, and Westwood (2022) control for a seven-point party
-identification scale and partisan strength. In the 2020 ANES, these two
-variables have an R² of 5% for the feeling thermometer toward the
-Democratic and Republican parties (rather than “supporters of” those
-parties). For R² = 5%, regression adjustment shrinks the standard error
-by about 2.5%.
+Broockman et al. (2023) control for a seven-point party identification
+scale and partisan strength. In the 2020 ANES, these two variables have
+an R² of 5% for the feeling thermometer toward the Democratic and
+Republican parties (rather than “supporters of” those parties). For R² =
+5%, regression adjustment shrinks the standard error by about 2.5%.
 
 ``` r
+
 from_sd(sd_y = 20.8, r_squared = 0.05) |>
   find_mde(n = 500)
 ```
@@ -126,19 +127,19 @@ standard error, but not substantially.
 
 ## With a pre-post measurement strategy
 
-Clifford, Sheagley, and Piston (2021) suggest measuring the outcome both
-before and after treatment and controlling for the pre-treatment
-measure. The pre-treatment measure should be *strongly* related to the
-post-treatment outcome. In a small pilot with 250 respondents, Cutler,
-Pietryka, and Rainey (2024) measure feelings toward supporters of the
-out-party before and after the treatment and find that the pre-treatment
-measure has an R² of about 73%.
+Clifford et al. (2021) suggest measuring the outcome both before and
+after treatment and controlling for the pre-treatment measure. The
+pre-treatment measure should be *strongly* related to the post-treatment
+outcome. In a pilot study, Cutler et al. (2026) measure feelings toward
+supporters of the out-party before and after the treatment and find that
+the pre-treatment measure has an R² of about 76%.
 
 If we set R² = 0.40—a conservative assumption given the pilot result,
 though additional work should confirm this assumption—the MDE changes
 substantially:
 
 ``` r
+
 from_sd(sd_y = 20.8, r_squared = 0.40) |>
   find_mde(n = 500)
 ```
@@ -193,16 +194,16 @@ sensitive than it is.
 - **R² = 0** (the default) assumes no control variables.
 - **R² of a few percent** is typical for standard demographics (age,
   gender, partisanship), as in the example above.
-- **R² = 0.30 to 0.50** is plausible for pre-post designs (Clifford,
-  Sheagley, and Piston 2021).
+- **R² = 0.37 to 0.81** is the range Clifford et al. (2021) observe
+  across their five pre-post studies.
 
 ## References
 
 Ahler, Douglas J., and Gaurav Sood. 2018. “The Parties in Our Heads:
-Misperceptions about Party Composition and Their Consequences.” *The
-Journal of Politics* 80 (3): 964–81. <https://doi.org/10.1086/697253>.
+Misperceptions about Party Composition and Their Consequences.” *Journal
+of Politics* 80 (3): 964–81. <https://doi.org/10.1086/697253>.
 
-Broockman, David E., Joshua L. Kalla, and Sean J. Westwood. 2022. “Does
+Broockman, David E., Joshua L. Kalla, and Sean J. Westwood. 2023. “Does
 Affective Polarization Undermine Democratic Norms or Accountability?
 Maybe Not.” *American Journal of Political Science* 67 (3): 808–28.
 <https://doi.org/10.1111/ajps.12719>.
@@ -210,11 +211,12 @@ Maybe Not.” *American Journal of Political Science* 67 (3): 808–28.
 Clifford, Scott, Geoffrey Sheagley, and Spencer Piston. 2021.
 “Increasing Precision Without Altering Treatment Effects: Repeated
 Measures Designs in Survey Experiments.” *American Political Science
-Review* 115 (3): 1048–65. <https://doi.org/10.1017/s0003055421000241>.
+Review* 115 (3): 1048–65. <https://doi.org/10.1017/S0003055421000241>.
 
-Cutler, Austin Lloyd, Matthew Pietryka, and Carlisle Rainey. 2024.
-“Merely Asking: A Replication of Ahler and Sood (2018).”
+Cutler, Austin Lloyd, Matthew T. Pietryka, and Carlisle Rainey. 2026.
+“Merely Asking: A Replication of Ahler and Sood (2018).” Unpublished
+manuscript.
 
 Rainey, Carlisle. 2026. “Power Rules: Practical Advice for Computing
-Power (and Automating with Pilot Data).” Center for Open Science.
-<https://doi.org/10.31219/osf.io/5am9q_v3>.
+Statistical Power.” *Political Analysis*.
+<https://osf.io/preprints/osf/5am9q>.

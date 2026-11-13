@@ -1,7 +1,8 @@
 # Create a power source from an existing study
 
-Uses Rule 7 from Rainey (2026). The SE and sample size from an existing
-study are used to predict the SE of the planned study.
+Uses Pilot Rule 1: Rule 1 of the companion paper to Rainey (2026),
+"Automating Power Analysis with Pilot Data." The SE and sample size from
+an existing study are used to predict the SE of the planned study.
 
 ## Usage
 
@@ -45,7 +46,7 @@ from_existing(se_existing = 1.8, n_existing = 268) |>
 #>     n (existing)  = 268 per condition
 #>     n (planned)   = 500 per condition (1,000 total)
 #> 
-#>   Predicted SE = sqrt(268 / 500) * 1.8 = 1.32                   [Rule 7]
+#>   Predicted SE = sqrt(268 / 500) * 1.8 = 1.32             [Pilot Rule 1]
 #>   MDE (80% power) = 2.49 * 1.32 = 3.28                          [Rule 5] 
 #>   MDE (95% power) = 3.29 * 1.32 = 4.34                          [Rule 5] 
 #> 

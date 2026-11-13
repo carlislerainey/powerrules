@@ -3,7 +3,7 @@
 [`write_DeclareDesign()`](https://carlislerainey.github.io/powerrules/reference/write_DeclareDesign.md)
 generates copy-pasteable DeclareDesign code that reproduces a powerrules
 calculation through simulation. The generated code follows Declaration
-18.1 in Blair, Coppock, and Humphreys (2023).
+18.1 in Blair et al. (2023).
 
 ## Running the pipeline
 
@@ -15,6 +15,7 @@ per condition and assume a treatment effect of 3 points (the lower bound
 of Ahler and Sood’s 95% confidence interval).
 
 ``` r
+
 library(powerrules)
 
 result <- from_sd(sd_y = 20.8) |>
@@ -48,6 +49,7 @@ result <- from_sd(sd_y = 20.8) |>
 takes the result and prints a self-contained DeclareDesign script:
 
 ``` r
+
 write_DeclareDesign(result)
 ```
 
@@ -110,6 +112,7 @@ Because DeclareDesign uses two-sided tests, the result closely matches
 the analytical 74% from powerrules for power levels above about 20%.
 
 ``` r
+
 library(DeclareDesign)
 ```
 
@@ -120,6 +123,7 @@ library(DeclareDesign)
     #> Loading required package: estimatr
 
 ``` r
+
 my_design <-
   declare_model(
     N = 1000,
@@ -131,6 +135,7 @@ my_design <-
   declare_measurement(Y = reveal_outcomes(Y ~ Z)) +
   declare_estimator(Y ~ Z, inquiry = "ATE")
 
+set.seed(1234)  # so this page shows the same result on every build
 diagnosis <- diagnose_design(my_design, sims = 500,
   diagnosands = declare_diagnosands(
     power = mean(p.value <= 0.10)
@@ -138,19 +143,20 @@ diagnosis <- diagnose_design(my_design, sims = 500,
 print(diagnosis)
 ```
 
-    #> 
-    #> Research design diagnosis based on 500 simulations. Diagnosis completed in 5 secs. Diagnosand estimates with bootstrapped standard errors in parentheses (100 replicates).
+    #> Research design diagnosis
+    #>   500 simulations
+    #>   bootstrap standard errors in parentheses (100 replicates)
     #> 
     #>     Design Inquiry Estimator Outcome Term N Sims  Power
-    #>  my_design     ATE estimator       Y    Z    500   0.72
+    #>  my_design     ATE estimator       Y    Z    500   0.76
     #>                                                  (0.02)
 
 ## References
 
 Ahler, Douglas J., and Gaurav Sood. 2018. “The Parties in Our Heads:
-Misperceptions about Party Composition and Their Consequences.” *The
-Journal of Politics* 80 (3): 964–81. <https://doi.org/10.1086/697253>.
+Misperceptions about Party Composition and Their Consequences.” *Journal
+of Politics* 80 (3): 964–81. <https://doi.org/10.1086/697253>.
 
 Blair, Graeme, Alexander Coppock, and Macartan Humphreys. 2023.
 *Research Design in the Social Sciences: Declaration, Diagnosis, and
-Redesign*. Princeton: Princeton University Press.
+Redesign*. Princeton University Press.

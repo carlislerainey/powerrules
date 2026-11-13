@@ -16,6 +16,7 @@ per condition and assume a treatment effect of 3 points (the lower bound
 of Ahler and Sood’s 95% confidence interval).
 
 ``` r
+
 library(powerrules)
 
 result <- from_sd(sd_y = 20.8) |>
@@ -49,6 +50,7 @@ result <- from_sd(sd_y = 20.8) |>
 takes the result and prints a self-contained simulation script:
 
 ``` r
+
 write_loop(result)
 ```
 
@@ -100,6 +102,7 @@ The simulation runs 500 experiments with one-sided tests (size 0.05 for
 power should be close to the analytical 74% from powerrules.
 
 ``` r
+
 library(sandwich)  # for HC2 robust SEs
 
 # --- Parameters ---
@@ -139,6 +142,7 @@ cat("Simulated power:", round(mean(reject) * 100), "%\n")
     #> Simulated power: 77 %
 
 ``` r
+
 cat("Expected:       ~74%\n")
 ```
 
@@ -147,9 +151,9 @@ cat("Expected:       ~74%\n")
 ## References
 
 Ahler, Douglas J., and Gaurav Sood. 2018. “The Parties in Our Heads:
-Misperceptions about Party Composition and Their Consequences.” *The
-Journal of Politics* 80 (3): 964–81. <https://doi.org/10.1086/697253>.
+Misperceptions about Party Composition and Their Consequences.” *Journal
+of Politics* 80 (3): 964–81. <https://doi.org/10.1086/697253>.
 
 Rainey, Carlisle. 2026. “Power Rules: Practical Advice for Computing
-Power (and Automating with Pilot Data).” Center for Open Science.
-<https://doi.org/10.31219/osf.io/5am9q_v3>.
+Statistical Power.” *Political Analysis*.
+<https://osf.io/preprints/osf/5am9q>.

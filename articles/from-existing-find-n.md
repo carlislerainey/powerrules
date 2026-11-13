@@ -26,6 +26,7 @@ The lower bound of Ahler and Sood’s 95% confidence interval is 3 points.
 We use this as our assumed effect, tau = 3. We want 95% power.
 
 ``` r
+
 library(powerrules)
 
 from_existing(se_existing = 1.8, n_existing = 268) |>
@@ -43,9 +44,9 @@ from_existing(se_existing = 1.8, n_existing = 268) |>
     #>     tau   = 3
     #>     power = 95% 
     #> 
-    #>   MDE factor          = qnorm(0.95) + qnorm(0.95) = 3.29       [Table 2] 
+    #>   MDE factor          = qnorm(0.95) + qnorm(0.95) = 3.29       [Table 1] 
     #>   n (planned)         = 268 * [3.29 / 3 * 1.8]^2
-    #>                       = 1,045 per condition (2,090 total)       [Rule 8] 
+    #>                       = 1,045 per condition (2,090 total)  [Pilot Rule 2] 
     #> 
     #> -- Manuscript sentence (edit as needed) -------------------------------- 
     #>   For a balanced, between-subjects design replicating an existing study
@@ -63,12 +64,13 @@ power to detect a treatment effect of 3 points.
 
 ## From Broockman, Kalla, and Westwood
 
-Broockman, Kalla, and Westwood (2022) closely replicate Ahler and Sood’s
-result, estimating a treatment effect of 3.9 with a 90% confidence
-interval of \[1.1, 6.6\]. They report a standard error of 1.67 with 502
-per condition.
+Broockman et al. (2023) closely replicate Ahler and Sood’s result,
+estimating a treatment effect of 3.9 with a 90% confidence interval of
+\[1.1, 6.6\]. A re-analysis of their data gives a standard error of 1.67
+with 502 per condition.
 
 ``` r
+
 from_existing(se_existing = 1.67, n_existing = 502) |>
   find_n(tau = 3, power = 0.95)
 ```
@@ -84,9 +86,9 @@ from_existing(se_existing = 1.67, n_existing = 502) |>
     #>     tau   = 3
     #>     power = 95% 
     #> 
-    #>   MDE factor          = qnorm(0.95) + qnorm(0.95) = 3.29       [Table 2] 
+    #>   MDE factor          = qnorm(0.95) + qnorm(0.95) = 3.29       [Table 1] 
     #>   n (planned)         = 502 * [3.29 / 3 * 1.67]^2
-    #>                       = 1,684 per condition (3,368 total)       [Rule 8] 
+    #>                       = 1,684 per condition (3,368 total)  [Pilot Rule 2] 
     #> 
     #> -- Manuscript sentence (edit as needed) -------------------------------- 
     #>   For a balanced, between-subjects design replicating an existing study
@@ -113,6 +115,7 @@ If you prefer 95% confidence intervals (a size-0.025 test), set
 `ci = 0.95`. The stricter test requires a larger sample.
 
 ``` r
+
 from_existing(se_existing = 1.8, n_existing = 268) |>
   find_n(tau = 3, power = 0.80, ci = 0.95)
 ```
@@ -128,9 +131,9 @@ from_existing(se_existing = 1.8, n_existing = 268) |>
     #>     tau   = 3
     #>     power = 80% 
     #> 
-    #>   MDE factor          = qnorm(0.975) + qnorm(0.80) = 2.80      [Table 2] 
+    #>   MDE factor          = qnorm(0.975) + qnorm(0.80) = 2.80      [Table 1] 
     #>   n (planned)         = 268 * [2.80 / 3 * 1.8]^2
-    #>                       = 758 per condition (1,516 total)         [Rule 8] 
+    #>                       = 758 per condition (1,516 total)   [Pilot Rule 2] 
     #> 
     #> -- Manuscript sentence (edit as needed) -------------------------------- 
     #>   For a balanced, between-subjects design replicating an existing study
@@ -160,14 +163,13 @@ for worked examples.
 ## References
 
 Ahler, Douglas J., and Gaurav Sood. 2018. “The Parties in Our Heads:
-Misperceptions about Party Composition and Their Consequences.” *The
-Journal of Politics* 80 (3): 964–81. <https://doi.org/10.1086/697253>.
+Misperceptions about Party Composition and Their Consequences.” *Journal
+of Politics* 80 (3): 964–81. <https://doi.org/10.1086/697253>.
 
-Broockman, David E., Joshua L. Kalla, and Sean J. Westwood. 2022. “Does
+Broockman, David E., Joshua L. Kalla, and Sean J. Westwood. 2023. “Does
 Affective Polarization Undermine Democratic Norms or Accountability?
 Maybe Not.” *American Journal of Political Science* 67 (3): 808–28.
 <https://doi.org/10.1111/ajps.12719>.
 
-Rainey, Carlisle. 2026. “Power Rules: Practical Advice for Computing
-Power (and Automating with Pilot Data).” Center for Open Science.
-<https://doi.org/10.31219/osf.io/5am9q_v3>.
+Rainey, Carlisle. 2026. “Automating Power Analysis with Pilot Data.”
+Unpublished manuscript.

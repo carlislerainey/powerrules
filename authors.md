@@ -10,15 +10,15 @@
 Source:
 [`inst/CITATION`](https://github.com/carlislerainey/powerrules/blob/main/inst/CITATION)
 
-Rainey C (2026). “Power Rules: Practical Advice for Computing Power (and
-Automating with Pilot Data).”
-[doi:10.31219/osf.io/5am9q_v3](https://doi.org/10.31219/osf.io/5am9q_v3),
-<https://doi.org/10.31219/osf.io/5am9q_v3>.
+Rainey C (2026). “Power Rules: Practical Advice for Computing
+Statistical Power.” *Political Analysis*. Forthcoming,
+<https://osf.io/preprints/osf/5am9q>.
 
-    @Misc{,
-      title = {Power Rules: Practical Advice for Computing Power (and Automating with Pilot Data)},
+    @Article{,
+      title = {Power Rules: Practical Advice for Computing Statistical Power},
       author = {Carlisle Rainey},
+      journal = {Political Analysis},
       year = {2026},
-      url = {https://doi.org/10.31219/osf.io/5am9q_v3},
-      doi = {10.31219/osf.io/5am9q_v3},
+      note = {Forthcoming},
+      url = {https://osf.io/preprints/osf/5am9q},
     }

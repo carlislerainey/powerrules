@@ -30,6 +30,7 @@ confidence interval is 3 points. We use this as our assumed effect, tau
 = 3.
 
 ``` r
+
 library(powerrules)
 
 from_existing(se_existing = 1.8, n_existing = 268) |>
@@ -47,7 +48,7 @@ from_existing(se_existing = 1.8, n_existing = 268) |>
     #>     n (planned)   = 500 per condition (1,000 total)
     #>     tau   = 3
     #> 
-    #>   Predicted SE = sqrt(268 / 500) * 1.8 = 1.32                   [Rule 7]
+    #>   Predicted SE = sqrt(268 / 500) * 1.8 = 1.32             [Pilot Rule 1]
     #>   tau / SE     = 3 / 1.32 = 2.28
     #>   Power        = 1 - pnorm(1.64 - 2.28) = 74%                   [Rule 2] 
     #> 
@@ -58,16 +59,17 @@ from_existing(se_existing = 1.8, n_existing = 268) |>
     #>   1.32. Using a one-sided test at the 0.05 level, the experiment has 74%
     #>   power to detect a treatment effect of 3 units.
 
-The output scales the existing SE to the planned sample size (Rule 7),
-then computes power for the assumed effect (Rule 2). With 500 per
-condition, the study has 74% power to detect a treatment effect of 3
-points. This falls below the conventional 80% threshold.
+The output scales the existing SE to the planned sample size (Pilot Rule
+1, which is Rule 1 from Rainey (2026a)), then computes power for the
+assumed effect (Rule 2 from Rainey (2026b)). With 500 per condition, the
+study has 74% power to detect a treatment effect of 3 points. This falls
+below the conventional 80% threshold.
 
 ## What makes an existing study “close enough”?
 
 The existing study and planned study should share the same design
 (balanced, between-subjects), a similar population, and the same or a
-similar outcome measure (Rainey 2026). The existing study can differ in
+similar outcome measure (Rainey 2026a). The existing study can differ in
 sample size and treatment—the rule adjusts for sample size and the
 researcher supplies the assumed effect separately.
 
@@ -84,9 +86,12 @@ for worked examples.
 ## References
 
 Ahler, Douglas J., and Gaurav Sood. 2018. “The Parties in Our Heads:
-Misperceptions about Party Composition and Their Consequences.” *The
-Journal of Politics* 80 (3): 964–81. <https://doi.org/10.1086/697253>.
+Misperceptions about Party Composition and Their Consequences.” *Journal
+of Politics* 80 (3): 964–81. <https://doi.org/10.1086/697253>.
 
-Rainey, Carlisle. 2026. “Power Rules: Practical Advice for Computing
-Power (and Automating with Pilot Data).” Center for Open Science.
-<https://doi.org/10.31219/osf.io/5am9q_v3>.
+Rainey, Carlisle. 2026a. “Automating Power Analysis with Pilot Data.”
+Unpublished manuscript.
+
+Rainey, Carlisle. 2026b. “Power Rules: Practical Advice for Computing
+Statistical Power.” *Political Analysis*.
+<https://osf.io/preprints/osf/5am9q>.
